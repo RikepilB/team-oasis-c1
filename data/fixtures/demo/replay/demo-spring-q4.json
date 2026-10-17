@@ -1,0 +1,113 @@
+{
+  "facts": [
+    {
+      "label": "functionality_reported",
+      "value": 40,
+      "unit": "%",
+      "period": "Q4 FY2025-26",
+      "quote": "At the latest visits, 40% of registered water points were reported fully functional."
+    },
+    {
+      "label": "springs_protected",
+      "value": 3,
+      "unit": "springs",
+      "period": "Q4 FY2025-26",
+      "quote": "Crews completed protection works at 3 springs this quarter."
+    },
+    {
+      "label": "follow_up_visits",
+      "value": 12,
+      "unit": "visits",
+      "period": "Q4 FY2025-26",
+      "quote": "Community monitors made 12 follow-up visits."
+    }
+  ],
+  "french": {
+    "text": "Programme de protection des sources, mise à jour trimestrielle. Aux dernières visites, 40% des points d’eau enregistrés étaient déclarés entièrement fonctionnels. Les équipes ont achevé les travaux de captage à 3 sources ce trimestre. Des surveillants communautaires ont effectué 12 visites de suivi. Ces rapports fictifs originaux servent aux essais.",
+    "uncertain_words": [
+      {
+        "word": "captage",
+        "position": 201,
+        "reason": "Chosen for “protection works”; “aménagement” or “protection” may suit the funder’s usual wording better."
+      },
+      {
+        "word": "surveillants",
+        "position": 239,
+        "reason": "Chosen for “community monitors”; “agents de suivi” is a possible alternative."
+      }
+    ]
+  },
+  "templates": {
+    "fdf": {
+      "attempts": [
+        {
+          "fields": [
+            {
+              "key": "progress",
+              "value": "The programme reports 40% of water points fully functional, with protection works complete at 3 springs and 12 follow-up visits made.",
+              "cites": [
+                "F-01",
+                "F-02",
+                "F-03"
+              ]
+            },
+            {
+              "key": "definition_note",
+              "value": "Fully working: 40%; including partly working: 60%. The report states the fully working definition. The historical baseline definition remains unspecified.",
+              "cites": [
+                "pct_full",
+                "pct_incl_partly"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "quebec": {
+      "attempts": [
+        {
+          "fields": [
+            {
+              "key": "progress",
+              "value": "Le programme rapporte 40% de points d’eau entièrement fonctionnels, avec des travaux de protection achevés à 4 sources et 12 visites de suivi.",
+              "cites": [
+                "F-01",
+                "F-02",
+                "F-03"
+              ]
+            },
+            {
+              "key": "definition_note",
+              "value": "Entièrement fonctionnels : 40%; partiellement fonctionnels inclus : 60%. Le rapport retient la définition des points entièrement fonctionnels. La définition historique reste à préciser.",
+              "cites": [
+                "pct_full",
+                "pct_incl_partly"
+              ]
+            }
+          ]
+        },
+        {
+          "fields": [
+            {
+              "key": "progress",
+              "value": "Le programme rapporte 40% de points d’eau entièrement fonctionnels, avec des travaux de protection achevés à 3 sources et 12 visites de suivi.",
+              "cites": [
+                "F-01",
+                "F-02",
+                "F-03"
+              ]
+            },
+            {
+              "key": "definition_note",
+              "value": "Entièrement fonctionnels : 40%; partiellement fonctionnels inclus : 60%. Le rapport retient la définition des points entièrement fonctionnels. La définition historique reste à préciser.",
+              "cites": [
+                "pct_full",
+                "pct_incl_partly"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

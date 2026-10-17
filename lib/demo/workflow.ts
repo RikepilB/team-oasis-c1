@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { loadKijana } from "@/lib/kijana/load";
@@ -10,7 +10,7 @@ import { ExtractSchema, FrenchSchema, FillSchema } from "@/lib/harness/jobs";
 import { getTemplate, loadStandard } from "@/lib/demo/standard";
 import { checkFact, checkFrench, checkNarrative, checkNumericField, type Citable } from "@/lib/demo/verify";
 import { DemoRecord, DemoTemplate, DemoError, Sidecar, EvidenceView, type ActionInput, type InboxSummary } from "@/lib/demo/types";
-import { context, atomic, readJson, safeId, serialized, audit, auditEntries, chainValid, hash, type Context } from "@/lib/demo/store";
+import { context, atomic, readJson, safeId, serialized, audit, auditEntries, chainValid, hash, type Context, runtimeExists, runtimeRead, runtimeWrite } from "@/lib/demo/store";
 import type { MetricRef } from "@/lib/types";
 const recordFile = (c: Context, id: string) => path.join(c.runtime, "records", safeId(id) + ".json");
 const snapshotFile = (c: Context, id: string) => path.join(c.runtime, "snapshots", safeId(id) + ".json");
@@ -40,7 +40,7 @@ function snapshot(c: Context, cutoff: string): EvidenceView {
     counts: { ...old, total, observed_total: rows.length, missing_total: missing_ids.length, pct_full: pct(old.fully_working), pct_incl_partly: pct(old.fully_working + old.partly_working) },
     districts: [...new Set(clean.points.map(p => p.district))].sort(), groups: Object.fromEntries(Object.entries(priorityGroups(rows)).map(([id, list]) => [id, list.length])) as EvidenceView["groups"], rows, missing_ids, report: clean.report
   };
-  if (!existsSync(snapshotFile(c, view.snapshot_id)))
+  if (!runtimeExists(snapshotFile(c, view.snapshot_id)))
     atomic(snapshotFile(c, view.snapshot_id), view);
   return view;
 }
@@ -51,7 +51,7 @@ function status(r: DemoRecord) {
 function save(c: Context, r: DemoRecord) { r.status = status(r); atomic(recordFile(c, r.record_id), DemoRecord.parse(r)); }
 function load(c: Context, id: string): DemoRecord {
   const file = recordFile(c, id);
-  if (existsSync(file))
+  if (runtimeExists(file))
     return DemoRecord.parse(readJson(file));
   const meta = path.join(c.dir, "inbox", safeId(id) + ".json");
   if (!existsSync(meta))
@@ -69,13 +69,12 @@ function load(c: Context, id: string): DemoRecord {
   return r;
 }
 export async function getRecord(id: string) { const c = context(); return serialized(c.runtime, async () => load(c, id)); }
-export async function listInbox(): Promise<InboxSummary[]> {
+export async function listRecords(): Promise<DemoRecord[]> {
   const c = context();
-  return serialized(c.runtime, async () => readdirSync(path.join(c.dir, "inbox")).filter(f => f.endsWith(".json")).sort().map(f => {
-    const id = f.slice(0, -5);
-    const r = load(c, id);
-    return { record_id: id, title: r.title, period: r.period, received_date: r.received_date, status: r.status };
-  }));
+  return serialized(c.runtime, async () => readdirSync(path.join(c.dir, "inbox")).filter(f => f.endsWith(".json")).sort().map(f => load(c, f.slice(0, -5))));
+}
+export async function listInbox(): Promise<InboxSummary[]> {
+  return (await listRecords()).map(r => ({ record_id:r.record_id, title:r.title, period:r.period, received_date:r.received_date, status:r.status }));
 }
 export async function getEvidence(query: {
   snapshot?: string;
@@ -85,10 +84,11 @@ export async function getEvidence(query: {
   district?: string;
 } = {}): Promise<EvidenceView> {
   const c = context();
+  return serialized(c.runtime, async () => {
   let e: EvidenceView;
   if (query.snapshot) {
     const f = snapshotFile(c, query.snapshot);
-    if (!existsSync(f))
+    if (!runtimeExists(f))
       throw new DemoError("snapshot_missing", "This saved evidence snapshot is unavailable.", 404);
     e = EvidenceView.parse(readJson(f));
   }
@@ -111,6 +111,7 @@ export async function getEvidence(query: {
   if (query.district)
     rows = rows.filter(p => p.district === query.district);
   return { ...e, districts: e.districts.length ? e.districts : [...new Set(e.rows.map(p => p.district))].sort(), rows };
+  });
 }
 function sources(c: Context, r: DemoRecord): Citable[] {
   return [...r.facts.map(f => ({ id: f.fact_id, value: f.value, unit: f.unit, valid: checkFact(f, r.original_text).check === "green" })),
@@ -208,12 +209,14 @@ export async function getExport(id: string, funder_id: string, revision: number)
   safeId(id);
   if (!["fdf", "quebec"].includes(funder_id) || !Number.isSafeInteger(revision) || revision < 1)
     throw new DemoError("invalid_export", "Invalid export request.");
+  return serialized(c.runtime, async () => {
   const file = exportFile(c, id, funder_id, revision);
-  if (!existsSync(file))
+  if (!runtimeExists(file))
     throw new DemoError("not_exported", "Confirm the export before downloading.", 404);
-  return { filename: path.basename(file), content: readFileSync(file, "utf8") };
+  return { filename: path.basename(file), content: runtimeRead(file) };
+  });
 }
-export async function getLog() { const c = context(); const entries = auditEntries(c); return { entries, valid: chainValid(entries) }; }
+export async function getLog() { const c = context(); return serialized(c.runtime, async () => { const entries = auditEntries(c); return { entries, valid: chainValid(entries) }; }); }
 export async function runAction(id: string, action: string, input: ActionInput = {}): Promise<DemoRecord> {
   const c = context();
   return serialized(c.runtime, async () => {
@@ -319,12 +322,11 @@ export async function runAction(id: string, action: string, input: ActionInput =
             if (t.approval.sent_at)
               return r;
             const file = exportFile(c, id, t.funder_id, t.revision);
-            mkdirSync(path.dirname(file), { recursive: true });
             const content = exportContent(c, r, t);
-            if (existsSync(file) && readFileSync(file, "utf8") !== content)
+            if (runtimeExists(file) && runtimeRead(file) !== content)
               throw new DemoError("export_conflict", "This revision already has a different immutable export.", 409);
-            if (!existsSync(file))
-              writeFileSync(file, content, { encoding: "utf8", flag: "wx" });
+            if (!runtimeExists(file))
+              runtimeWrite(file, content, "wx");
             t.approval.sent_at = now();
             t.disclosure = getTemplate(t.funder_id).disclosure.replace("{approver}", actor).replace("{date}", t.approval.content_approved_at.slice(0, 10));
             audit(c, actor, "export", id, { funder_id: t.funder_id, revision: t.revision, filename: path.basename(file) });

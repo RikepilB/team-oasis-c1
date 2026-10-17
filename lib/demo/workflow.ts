@@ -9,6 +9,7 @@ import { guardPersonalData, PERSONAL_DATA_PATTERNS } from "@/lib/harness/guard";
 import { ExtractSchema, FrenchSchema, FillSchema } from "@/lib/harness/jobs";
 import { getTemplate, loadStandard } from "@/lib/demo/standard";
 import { checkFact, checkFrench, checkNarrative, checkNumericField, type Citable } from "@/lib/demo/verify";
+import { buildFrenchItems, decideFrenchItem } from "@/lib/demo/french-review";
 import { DemoRecord, DemoTemplate, DemoError, Sidecar, EvidenceView, type ActionInput, type InboxSummary } from "@/lib/demo/types";
 import { context, atomic, readJson, safeId, serialized, audit, auditEntries, chainValid, hash, type Context, runtimeExists, runtimeRead, runtimeWrite } from "@/lib/demo/store";
 import type { MetricRef } from "@/lib/types";
@@ -253,9 +254,20 @@ export async function runAction(id: string, action: string, input: ActionInput =
         throw new DemoError("not_extracted", "Extract source facts first.");
       const out = await replay(c, r, "draft_french", recorded().french, FrenchSchema, d => checkFrench(r.original_text, d.text).problems, actor);
       const check = checkFrench(r.original_text, out.text);
-      r.french = { text: out.text, check: check.check, problems: check.problems };
+      r.french = { text: out.text, check: check.check, problems: check.problems, items: buildFrenchItems(r.original_text, out.text, out.uncertain_words) };
       invalidate(r);
       r.completed.push("french");
+    }
+    else if (action === "french_item") {
+      if (!r.french)
+        throw new DemoError("not_translated", "Create the French draft first.");
+      const at = now();
+      const next = decideFrenchItem(r.french.text, r.french.items, { id: input.key || "", decision: input.decision || "approve", actor, at, note: input.note, replacement: input.value });
+      const item = next.items.find(i => i.id === input.key)!;
+      // A fix can touch a number, so the preservation check runs again on every changed text.
+      const check = checkFrench(r.original_text, next.text);
+      r.french = { text: next.text, check: check.check, problems: check.problems, items: next.items };
+      audit(c, actor, "french_item", id, { item: item.id, origin: item.origin, decision: item.decision!.decision, before: item.decision!.before, after: item.decision!.after, note: item.decision!.note, number_check: check.check });
     }
     else if (action === "template") {
       if (!r.facts.length)
@@ -300,6 +312,8 @@ export async function runAction(id: string, action: string, input: ActionInput =
         if (action === "review") {
           if (t.language !== "fr")
             throw new DemoError("review_unneeded", "French review applies to the French template.");
+          if (r.french && (r.french.check === "red" || r.french.items.some(i => !i.decision)))
+            throw new DemoError("french_items_open", "Decide every flagged French item, with all numbers preserved, before confirming the review.");
           t.review = { actor, revision: t.revision, at: now() };
           audit(c, actor, "review", id, { funder_id: t.funder_id, revision: t.revision });
         }

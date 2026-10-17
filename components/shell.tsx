@@ -6,18 +6,24 @@ import "./workspace-shell.css";
 import { AssistantPanel } from "@/components/assistant-panel";
 import { SearchBar } from "@/components/search-bar";
 import { Guide } from "@/components/guide";
+import { PersonMenu } from "@/components/person-switcher";
 import type { Catalog } from "@/lib/demo/catalog";
 import { getReportStatus } from "@/lib/demo/presentation";
 
 // Per-browser user preferences. Demo only: nothing here is an account or a permission.
-export type Preferences = { name: string; role: "preparer" | "reviewer" | "approver" | "admin"; language: "en" | "fr"; defaultFunder: "fdf" | "quebec"; assistantOpen: boolean | null; sidebarCollapsed: boolean };
-const DEFAULTS: Preferences = { name: "", role: "preparer", language: "en", defaultFunder: "fdf", assistantOpen: null, sidebarCollapsed: false };
+// personId picks a demo person (lib/demo/people.ts); "custom" keeps a typed name and role.
+export type Preferences = { personId: string; name: string; role: "preparer" | "reviewer" | "approver" | "admin"; language: "en" | "fr"; defaultFunder: "fdf" | "quebec"; assistantOpen: boolean | null; sidebarCollapsed: boolean };
+const DEFAULTS: Preferences = { personId: "daniel", name: "Daniel", role: "preparer", language: "en", defaultFunder: "fdf", assistantOpen: null, sidebarCollapsed: false };
 const KEY = "synapse.preferences";
 let cache: Preferences | null = null;
 const listeners = new Set<() => void>();
 function readPreferences(): Preferences {
   if (cache) return cache;
-  try { cache = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; } catch { cache = DEFAULTS; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+    // A name saved before people existed stays a custom person instead of turning into Daniel.
+    cache = { ...DEFAULTS, ...(saved.name && !saved.personId ? { personId: "custom" } : {}), ...saved };
+  } catch { cache = DEFAULTS; }
   return cache!;
 }
 export function savePreferences(change: Partial<Preferences>) {
@@ -71,7 +77,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {reports.data?.map(r => <Link key={r.record_id} href={"/runs/" + r.record_id} onClick={close} aria-current={pathname === "/runs/" + r.record_id ? "page" : undefined} className="sidebar-report"><span className="sidebar-dot" data-status={getReportStatus(r)} aria-hidden="true" />{r.title}</Link>)}
           {reports.error && <p className="sidebar-note">{t("Reports unavailable", "Rapports indisponibles")}</p>}
         </nav>
-        <div className="sidebar-footer">{item(["/settings", "Settings", "Paramètres"])}<Link href="/settings" onClick={close} className="sidebar-user"><span className="sidebar-avatar" aria-hidden="true">{(prefs.name.trim()[0] || "?").toUpperCase()}</span><span>{prefs.name.trim() || t("Set your name", "Indiquez votre nom")}<small>{t("Demo identity", "Identité de démonstration")}</small></span></Link><p className="sidebar-note">{t("A person reviews every report.", "Une personne révise chaque rapport.")}</p></div>
+        <div className="sidebar-footer">{item(["/settings", "Settings", "Paramètres"])}<PersonMenu onNavigate={close} /><p className="sidebar-note">{t("A person reviews every report.", "Une personne révise chaque rapport.")}</p></div>
       </aside>
       <div className="synapse-main"><div className="synapse-content">{children}</div>
         <footer className="synapse-footer"><span>Synapse · Team Oasis</span><span>{t("Every result has a source. Every decision has a person.", "Chaque résultat a sa source. Chaque décision a sa personne.")}</span></footer></div>

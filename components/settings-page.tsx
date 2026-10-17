@@ -3,11 +3,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { useLanguage, useRemote, usePreferences, savePreferences, Message, type Preferences } from "@/components/shell";
 import type { loadStandard } from "@/lib/demo/standard";
+import { PersonSelect, switchPerson, usePerson } from "@/components/person-switcher";
+import { PEOPLE, ROLE_LABEL, canDo, type Action, type Role } from "@/lib/demo/people";
 type Health = { application: string; storage: string; provider: string; identity: string; cache: string };
-const ROLES: [Preferences["role"], string, string][] = [["preparer", "Preparer", "Préparateur"], ["reviewer", "Bilingual reviewer", "Réviseur bilingue"], ["approver", "Approver", "Approbateur"], ["admin", "Administrator", "Administrateur"]];
+const ACTIONS: [Action, string, string][] = [["prepare", "Prepare & edit", "Préparer et modifier"], ["review", "French review", "Révision française"], ["approve", "Approve & export", "Approuver et exporter"], ["settings", "Owns settings*", "Paramètres*"]];
 export function SettingsPage() {
   const { t } = useLanguage();
   const prefs = usePreferences();
+  const person = usePerson();
   const [tab, setTab] = useState<"user" | "app">("user");
   const [saved, setSaved] = useState(false);
   const health = useRemote<Health>("/api/health");
@@ -21,16 +24,29 @@ export function SettingsPage() {
     </div>
     {tab === "user" && <section id="settings-user" role="tabpanel" aria-labelledby="settings-tab-user" className="panel settings-panel">
       <h2>{t("Your profile", "Votre profil")}</h2>
-      <p className="muted">{t("Saved in this browser only. Your name fills in Preparer and Acting person on reports. A role here is a demo label, not a permission.", "Enregistré dans ce navigateur seulement. Votre nom remplit Préparateur et Personne responsable. Le rôle est une étiquette de démonstration, pas un droit.")}</p>
+      <p className="muted">{t("No sign-in in this demo: pick who you are acting as. Reports record that person, and each step shows which role can act. Saved in this browser only.", "Aucune connexion dans cette démo : choisissez la personne. Les rapports enregistrent cette personne et chaque étape indique le rôle qui peut agir. Enregistré dans ce navigateur seulement.")}</p>
       <div className="settings-form">
-        <label>{t("Display name", "Nom affiché")}<input value={prefs.name} maxLength={60} placeholder={t("e.g. Casey", "p. ex. Casey")} onChange={e => set({ name: e.target.value })} /></label>
-        <label>{t("Role in this demo", "Rôle dans la démo")}<select value={prefs.role} onChange={e => set({ role: e.target.value as Preferences["role"] })}>{ROLES.map(([v, en, fr]) => <option key={v} value={v}>{t(en, fr)}</option>)}</select></label>
+        <PersonSelect label={t("Acting as", "Agir en tant que")} />
+        {prefs.personId === "custom" ? <>
+          <label>{t("Custom name", "Nom personnalisé")}<input value={prefs.name} maxLength={60} placeholder={t("e.g. Casey", "p. ex. Casey")} onChange={e => set({ name: e.target.value })} /></label>
+          <label>{t("Custom role", "Rôle personnalisé")}<select value={prefs.role} onChange={e => set({ role: e.target.value as Preferences["role"] })}>{(Object.keys(ROLE_LABEL) as Role[]).map(v => <option key={v} value={v}>{t(...ROLE_LABEL[v])}</option>)}</select></label>
+        </> : <p className="settings-person-note">{t(person.title_en, person.title_fr)} · {t(...ROLE_LABEL[person.role])}</p>}
         <label>{t("Language", "Langue")}<select value={prefs.language} onChange={e => set({ language: e.target.value as "en" | "fr" })}><option value="en">English</option><option value="fr">Français</option></select></label>
         <label>{t("Default funder version", "Version de bailleur par défaut")}<select value={prefs.defaultFunder} onChange={e => set({ defaultFunder: e.target.value as "fdf" | "quebec" })}><option value="fdf">FDF · English</option><option value="quebec">Fondation du Québec · Français</option></select></label>
         <label className="settings-check"><input type="checkbox" checked={prefs.assistantOpen !== false} onChange={e => set({ assistantOpen: e.target.checked })} />{t("Show the evidence assistant on the right", "Afficher l’assistant de données à droite")}</label>
       </div>
       {saved && <p role="status" className="success-text">✓ {t("Saved on this browser.", "Enregistré dans ce navigateur.")}</p>}
-      <p className="muted small">{t("Notifications and sign-in are not connected in this demo.", "Notifications et connexion ne sont pas branchées dans cette démo.")}</p>
+      <h3>{t("People and roles", "Personnes et rôles")}</h3>
+      <p className="muted small">{t("Fictional demo people. Switch from the sidebar at any time; the server still refuses self-approval and unreviewed French.", "Personnes fictives. Changez depuis le menu à tout moment; le serveur refuse toujours l’auto-approbation et le français non révisé.")}</p>
+      <div className="table-scroll"><table className="people-table">
+        <thead><tr><th scope="col">{t("Person", "Personne")}</th>{ACTIONS.map(([a, en, fr]) => <th scope="col" key={a}>{t(en, fr)}</th>)}<th scope="col"><span className="sr-only">{t("Switch", "Changer")}</span></th></tr></thead>
+        <tbody>{PEOPLE.map(p => <tr key={p.id} aria-current={p.id === person.id ? "true" : undefined}>
+          <th scope="row"><strong>{p.name}</strong><small>{t(...ROLE_LABEL[p.role])} · {t(p.title_en, p.title_fr)}</small></th>
+          {ACTIONS.map(([a]) => <td key={a}>{canDo(p.role, a) ? <span className="people-yes">✓ <span className="sr-only">{t("Yes", "Oui")}</span></span> : <span className="people-no" aria-label={t("No", "Non")}>—</span>}</td>)}
+          <td>{p.id === person.id ? <span className="people-current">{t("Acting", "Actif")}</span> : <button type="button" className="secondary" onClick={() => switchPerson(p.id)}>{t("Act as", "Agir")}</button>}</td>
+        </tr>)}</tbody>
+      </table></div>
+      <p className="muted small">{t("* App settings are view-only for everyone in this demo. Notifications and sign-in are not connected.", "* Les paramètres sont en lecture seule pour tous dans cette démo. Notifications et connexion ne sont pas branchées.")}</p>
     </section>}
     {tab === "app" && <section id="settings-app" role="tabpanel" aria-labelledby="settings-tab-app" className="panel settings-panel">
       <h2>{t("App settings", "Paramètres de l’application")}</h2>

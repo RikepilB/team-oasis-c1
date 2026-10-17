@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
+  // The dev badge sat on top of the sidebar person switcher; compile and runtime errors still show.
+  devIndicators: false,
   outputFileTracingIncludes: {
     "/*": ["./data/fixtures/demo/**/*", "./standard/**/*", "./skills/**/*"],
   },

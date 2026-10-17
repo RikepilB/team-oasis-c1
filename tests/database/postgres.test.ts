@@ -17,7 +17,7 @@ real("PostgreSQL repeats both reports and funders twice, enforcing human review"
  for(let cycle=0;cycle<2;cycle++)for(const id of ["fixture-q1","fixture-q4"])for(const funder of ["fdf","quebec"] as const){
   let r=await prepared(id,funder);const input={actor:"Morgan",funder_id:funder,expected_revision:r.templates[funder]!.revision};
   await expect(runAction(id,"approve",{...input,actor:"Casey"})).rejects.toThrow(/different/);
-  if(funder==="quebec"){await expect(runAction(id,"approve",input)).rejects.toThrow(/French/);r=await runAction(id,"review",{...input,actor:"Camille"});}
+  if(funder==="quebec"){await expect(runAction(id,"approve",input)).rejects.toThrow(/French/);for(const i of (await getRecord(id)).french?.items??[])await runAction(id,"french_item",{actor:"Camille",key:i.id,decision:"approve"});r=await runAction(id,"review",{...input,actor:"Camille"});}
   await runAction(id,"approve",input);await Promise.all([runAction(id,"export",input),runAction(id,"export",input)]);
   expect((await getExport(id,funder,r.templates[funder]!.revision)).content).toContain("Morgan");
  }

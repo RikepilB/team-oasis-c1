@@ -14,12 +14,18 @@ export const EvidenceView = z.object({
   districts: z.array(z.string()).default([]), groups: z.record(PriorityGroup, z.number()), rows: z.array(WaterPointStatus), missing_ids: z.array(z.string()), report: CleaningReport
 });
 export type EvidenceView = z.infer<typeof EvidenceView>;
+// One flagged span in the French draft. A bilingual person approves it, or declines it with a fix.
+export const FrenchItem = z.object({
+  id: z.string(), origin: z.enum(["AI", "Rule"]), word: z.string(), position: z.number().int(), reason: z.string(), alternatives: z.array(z.string()).default([]),
+  decision: z.object({ decision: z.enum(["approved", "declined"]), actor: z.string(), at: z.string(), note: z.string(), before: z.string(), after: z.string() }).nullable().default(null),
+});
+export type FrenchItem = z.infer<typeof FrenchItem>;
 export const DemoRecord = z.object({
   record_id: z.string(), title: z.string(), period: z.string(), period_end: z.string(), received_date: z.string(), dataset_id: z.string(),
   source_file: z.string(), source_location: z.string(), original_text: z.string(), preparer: z.string(), revision: z.number().int(), status: z.string(),
   facts: z.array(Fact), changes: z.array(Change), metrics: z.array(MetricRef), coverage: z.object({ total: z.number(), observed: z.number(), missing_ids: z.array(z.string()) }),
   snapshot_id: z.string(), completed: z.array(z.string()),
-  french: z.object({ text: z.string(), check: z.enum(["green", "red"]), problems: z.array(z.string()) }).nullable(),
+  french: z.object({ text: z.string(), check: z.enum(["green", "red"]), problems: z.array(z.string()), items: z.array(FrenchItem).default([]) }).nullable(),
   templates: z.partialRecord(z.enum(["fdf", "quebec"]), DemoTemplate)
 });
 export type DemoRecord = z.infer<typeof DemoRecord>;
@@ -37,6 +43,8 @@ export type ActionInput = {
   key?: string;
   value?: string;
   expected_revision?: number;
+  decision?: "approve" | "decline";
+  note?: string;
 };
 export const Constant = z.object({ id: z.string(), label: z.string(), value: z.number(), unit: z.string(), quote: z.string(), source: z.string(), definition: z.string(), period: z.string() });
 export const Dataset = z.object({ id: z.string(), label: z.string(), csv_dir: z.string(), constants: z.array(Constant) });

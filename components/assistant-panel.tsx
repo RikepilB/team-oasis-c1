@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { FrenchReviewPanel } from "@/components/french-review";
 import { api, useCurrentRecordId, useLanguage } from "@/components/shell";
 import type { Catalog } from "@/lib/demo/catalog";
 import type { EvidenceAnswer } from "@/lib/demo/questions";
@@ -9,6 +11,10 @@ type Turn = { id: number; record_id: string; question: string; answer?: Evidence
 export function AssistantPanel({ reports, onClose }: { reports: Catalog; onClose: () => void }) {
   const { t, language } = useLanguage();
   const current = useCurrentRecordId();
+  // On a report, the panel also reviews French; it opens on Review from the French tab, Ask elsewhere.
+  const onFrench = useSearchParams().get("tab") === "french";
+  const [mode, setMode] = useState<"review" | "ask" | null>(null);
+  const view = current ? mode ?? (onFrench ? "review" : "ask") : "ask";
   const [picked, setPicked] = useState("");
   const recordId = current ?? (picked || reports[0]?.record_id || "");
   const report = reports.find(r => r.record_id === recordId);
@@ -29,7 +35,9 @@ export function AssistantPanel({ reports, onClose }: { reports: Catalog; onClose
   }
   const thread = turns.filter(x => x.record_id === recordId);
   return <div className="assistant-panel">
-    <div className="assistant-head"><div><h2>{t("Evidence assistant", "Assistant de données")}</h2><p>{t("Ask where a number comes from or what is missing. Every answer cites the report.", "Demandez d’où vient un chiffre ou ce qui manque. Chaque réponse cite le rapport.")}</p></div><button type="button" className="assistant-close" onClick={onClose} aria-label={t("Close the assistant", "Fermer l’assistant")}>✕</button></div>
+    <div className="assistant-head"><div><h2>{t("Assistant", "Assistant")}</h2><p>{view === "review" ? t("Flags what the AI is not sure about in the French. A bilingual person approves or declines each one.", "Signale ce dont l’IA n’est pas sûre dans le français. Une personne bilingue approuve ou refuse chaque élément.") : t("Ask where a number comes from or what is missing. Every answer cites the report.", "Demandez d’où vient un chiffre ou ce qui manque. Chaque réponse cite le rapport.")}</p></div><button type="button" className="assistant-close" onClick={onClose} aria-label={t("Close the assistant", "Fermer l’assistant")}>✕</button></div>
+    {current && <div className="assistant-tabs" role="tablist" aria-label={t("Assistant mode", "Mode de l’assistant")}>{([["review", "French review", "Révision française"], ["ask", "Ask", "Questions"]] as const).map(([key, en, fr]) => <button key={key} type="button" role="tab" aria-selected={view === key} onClick={() => setMode(key)}>{t(en, fr)}</button>)}</div>}
+    {view === "review" && current ? <FrenchReviewPanel id={current} /> : <>
     {current ? <p className="assistant-context">{t("About", "À propos de")} <strong>{report?.title ?? current}</strong></p> :
       <label className="assistant-context">{t("Report", "Rapport")}<select value={recordId} onChange={e => setPicked(e.target.value)}>{reports.map(r => <option key={r.record_id} value={r.record_id}>{r.title}</option>)}</select></label>}
     <div className="assistant-thread" aria-live="polite">
@@ -45,5 +53,6 @@ export function AssistantPanel({ reports, onClose }: { reports: Catalog; onClose
       <button className="primary" disabled={busy || question.trim().length < 2 || !recordId}>{busy ? "…" : t("Ask", "Demander")}</button>
     </form>
     <p className="assistant-note">{t("Verified lookup over this report’s facts and checks. Replay mode: no live model call.", "Recherche vérifiée dans les faits et contrôles du rapport. Mode rejeu : aucun modèle appelé.")}</p>
+    </>}
   </div>;
 }

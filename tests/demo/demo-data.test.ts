@@ -166,6 +166,7 @@ describe.each(clean)("clean report $id", c => {
     // French funder: approval is refused until a bilingual person has reviewed the current revision.
     const quebec = r.templates.quebec!;
     await expect(runAction(c.id, "approve", { actor: approver, funder_id: "quebec", expected_revision: quebec.revision })).rejects.toThrow(/French/i);
+    for (const i of (await getRecord(c.id)).french?.items ?? []) await runAction(c.id, "french_item", { actor: reviewer, key: i.id, decision: "approve" });
     await runAction(c.id, "review", { actor: reviewer, funder_id: "quebec", expected_revision: quebec.revision });
     await runAction(c.id, "approve", { actor: approver, funder_id: "quebec", expected_revision: quebec.revision });
     r = await runAction(c.id, "export", { actor: approver, funder_id: "quebec", expected_revision: quebec.revision });

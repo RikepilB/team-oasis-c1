@@ -1,0 +1,76 @@
+[
+  {
+    "id": "verbatim_quote",
+    "label": "Quotes match the original",
+    "severity": "block",
+    "message_en": "Quotes match the original",
+    "message_fr": "Citations conformes à l’original",
+    "params": {}
+  },
+  {
+    "id": "value_in_quote",
+    "label": "Fact values match their quotes",
+    "severity": "block",
+    "message_en": "Fact values match their quotes",
+    "message_fr": "Valeurs conformes aux citations",
+    "params": {}
+  },
+  {
+    "id": "functionality_cross_check",
+    "label": "Reported functionality definition",
+    "severity": "warn",
+    "message_en": "Reported functionality definition",
+    "message_fr": "Définition du taux déclaré",
+    "params": {
+      "tolerance": 0.5
+    }
+  },
+  {
+    "id": "numbers_preserved",
+    "label": "French preserves every number",
+    "severity": "block",
+    "message_en": "French preserves every number",
+    "message_fr": "Tous les chiffres sont conservés en français",
+    "params": {}
+  },
+  {
+    "id": "narrative_numbers_cited",
+    "label": "Narrative numbers have valid citations",
+    "severity": "block",
+    "message_en": "Narrative numbers have valid citations",
+    "message_fr": "Les chiffres narratifs ont des sources valides",
+    "params": {}
+  },
+  {
+    "id": "numeric_field_matches_source",
+    "label": "Numeric fields equal their sources",
+    "severity": "block",
+    "message_en": "Numeric fields equal their sources",
+    "message_fr": "Les champs numériques correspondent aux sources",
+    "params": {}
+  },
+  {
+    "id": "coverage",
+    "label": "All registered points have an observation",
+    "severity": "block",
+    "message_en": "All registered points have an observation",
+    "message_fr": "Chaque point enregistré a une observation",
+    "params": {}
+  },
+  {
+    "id": "preparer_not_approver",
+    "label": "A different person approves",
+    "severity": "block",
+    "message_en": "A different person approves",
+    "message_fr": "Une autre personne approuve",
+    "params": {}
+  },
+  {
+    "id": "personal_data_guard",
+    "label": "Personal-data guard",
+    "severity": "block",
+    "message_en": "Personal-data guard",
+    "message_fr": "Protection des données personnelles",
+    "params": {}
+  }
+]

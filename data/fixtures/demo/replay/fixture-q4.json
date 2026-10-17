@@ -1,0 +1,108 @@
+{
+  "facts": [
+    {
+      "label": "functionality_reported",
+      "value": 60,
+      "unit": "%",
+      "period": "Q4 FY2025-26",
+      "quote": "At the latest visits, 60% of registered water points were reported functional."
+    },
+    {
+      "label": "members_trained",
+      "value": 9,
+      "unit": "people",
+      "period": "Q4 FY2025-26",
+      "quote": "The programme trained 9 committee members."
+    }
+  ],
+  "french": {
+    "text": "Aux dernières visites, 60% des points d’eau enregistrés étaient déclarés fonctionnels. Le programme a formé 9 membres des comités. Ces rapports fictifs originaux servent aux essais.",
+    "uncertain_words": []
+  },
+  "templates": {
+    "fdf": {
+      "attempts": [
+        {
+          "fields": [
+            {
+              "key": "progress",
+              "value": "The programme reports 60% of water points functional.",
+              "cites": [
+                "F-01"
+              ]
+            },
+            {
+              "key": "definition_note",
+              "value": "Fully working: 41%; including partly working: 60%. The historical baseline definition remains unspecified.",
+              "cites": [
+                "pct_full",
+                "pct_incl_partly"
+              ]
+            }
+          ]
+        },
+        {
+          "fields": [
+            {
+              "key": "progress",
+              "value": "The programme reports 60% of water points functional.",
+              "cites": [
+                "F-01"
+              ]
+            },
+            {
+              "key": "definition_note",
+              "value": "Fully working: 40%; including partly working: 60%. The historical baseline definition remains unspecified.",
+              "cites": [
+                "pct_full",
+                "pct_incl_partly"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "quebec": {
+      "attempts": [
+        {
+          "fields": [
+            {
+              "key": "progress",
+              "value": "Le programme rapporte 60% de points d’eau fonctionnels.",
+              "cites": [
+                "F-01"
+              ]
+            },
+            {
+              "key": "definition_note",
+              "value": "Entièrement fonctionnels : 41%; partiellement fonctionnels inclus : 60%. La définition historique reste à préciser.",
+              "cites": [
+                "pct_full",
+                "pct_incl_partly"
+              ]
+            }
+          ]
+        },
+        {
+          "fields": [
+            {
+              "key": "progress",
+              "value": "Le programme rapporte 60% de points d’eau fonctionnels.",
+              "cites": [
+                "F-01"
+              ]
+            },
+            {
+              "key": "definition_note",
+              "value": "Entièrement fonctionnels : 40%; partiellement fonctionnels inclus : 60%. La définition historique reste à préciser.",
+              "cites": [
+                "pct_full",
+                "pct_incl_partly"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

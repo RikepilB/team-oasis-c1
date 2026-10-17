@@ -1,0 +1,11 @@
+visit_id,water_point_id,visit_date,visitor_role,status,issue_category,downtime_days_reported,water_quality_test,repair_completed,notes
+1,KJ-MVU-0001,2024-04-15,Area mechanic,Functional,none,0,Pass,N,"Synthetic fixture row, routine check"
+2,KJ-MVU-0001,2025-02-03,Programme officer,Func.,none,0,Pass,N,Synthetic fixture row
+3,KJ-KIL-0001,12/07/2024,District water officer,functional,none,0,Pass,N,Synthetic fixture row: day-first date that could also read month-first
+4,KJ-KIL-0001,2025-09-30,Committee SMS,NF,pump,21,Fail,,Synthetic fixture row: blank repair_completed
+5,KJ-UPA-0001,2025-05-20,Area mechanic,Partially,leak,4,Pass,N,Synthetic fixture row
+6,KJ-UPA-0001,24/01/2026,District water officer,Partially functional,leak,6,Pass,N,Synthetic fixture row: day-first date that cannot be month-first
+7,KJ-JIW-0001,2024-11-08,Programme officer,Not functional,pump,30,Not tested,N,Synthetic fixture row
+8,KJ-JIW-0001,2026-03-17,Area mechanic,Not functional,pump,12,Pass,Y,Synthetic fixture row
+9,KJ-XXX-9999,2025-06-01,Committee SMS,Functional,none,0,Pass,N,Synthetic fixture row: point not in the register
+10,KJ-MVU-0002,2026-02-09,Programme officer,Functional,none,0,Pass,N,Synthetic fixture row

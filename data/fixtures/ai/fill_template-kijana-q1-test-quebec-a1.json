@@ -1,0 +1,27 @@
+{
+  "fields": [
+    {
+      "key": "progres",
+      "value": "L'exemple inventé indique 85 %. Il contient 22 forages fictifs, 41 comités simulés et 1 900 personnes fictives.",
+      "cites": [
+        "F-01",
+        "F-02",
+        "F-03",
+        "F-04"
+      ]
+    },
+    {
+      "key": "defis",
+      "value": "Le scénario utilise quatre districts ; deux ont un plan d'essai. Chaque entrée est inventée pour vérifier le logiciel.",
+      "cites": []
+    },
+    {
+      "key": "note_definition",
+      "value": "70,3 % des points d'eau fonctionnent pleinement ; 85,3 % si l'on inclut ceux qui fonctionnent partiellement.",
+      "cites": [
+        "pct_full",
+        "pct_incl_partly"
+      ]
+    }
+  ]
+}

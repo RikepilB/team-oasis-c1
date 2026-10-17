@@ -1,0 +1,11 @@
+visit_id,water_point_id,visit_date,visitor_role,status,issue_category,downtime_days_reported,water_quality_test,repair_completed,notes
+1,DEMO-1,2026-03-15,Programme officer,Functional,none,0,Pass,N,Original synthetic row
+2,DEMO-2,2026-03-15,Programme officer,Partially functional,none,0,Pass,N,Original synthetic row
+3,DEMO-3,2026-03-15,Programme officer,Not functional,none,0,Pass,N,Original synthetic row
+4,DEMO-4,2026-03-15,Programme officer,Not functional,none,0,Pass,N,Original synthetic row
+5,DEMO-5,2026-03-15,Programme officer,Functional,none,0,Fail,N,Original synthetic row
+6,DEMO-1,2026-06-15,Programme officer,Functional,none,0,Pass,N,Original synthetic row
+7,DEMO-2,2026-06-15,Programme officer,Functional,none,0,Pass,N,Original synthetic row
+8,DEMO-3,2026-06-15,Programme officer,Partially functional,none,0,Pass,N,Original synthetic row
+9,DEMO-4,2026-06-15,Programme officer,Not functional,none,0,Pass,N,Original synthetic row
+10,DEMO-5,2026-06-15,Programme officer,Functional,none,0,Fail,N,Original synthetic row

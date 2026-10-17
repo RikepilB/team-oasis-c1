@@ -1,0 +1,10 @@
+{
+  "id": "ca-en",
+  "label": "Canada · English",
+  "language": "en",
+  "number_locale": "en-CA",
+  "functionality_definition": "both",
+  "templates": ["fdf", "cedar_stone"],
+  "provider": "replay",
+  "offline": false
+}

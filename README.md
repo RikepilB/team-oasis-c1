@@ -1,51 +1,66 @@
-# Evidence Ledger — Team C1, The Water Challenge
+# Aquifer — Team Oasis
 
-Working component for **Track C1: Reimagining an AI-Enabled Water Care Canada**
-(The Water Challenge, build day 17 Oct 2026, TMU). Private team repository.
+A local, replay-based demonstration of a programme report becoming a sourced, checked, human-approved funder report in English and French.
 
-**The idea in one line:** information comes in once, gets checked once, one approved AI tool does
-the repeated jobs (one written instruction per job), plain code does every number, and a person
-approves everything before it goes out.
+The application preserves the original report, extracts facts with source quotes, computes water-point metrics in code, checks every numerical field, and requires separate human approval and export confirmation. The Québec template also requires review of its final French text.
 
-The app has two features that share one checked record:
+All programme and funder data is fictional. Replay reads prepared responses from disk; the integrated application makes no live model calls and sends no email.
 
-1. **Inbox → funder report.** A Kijana quarterly report arrives, becomes a Fact Record, is cleaned,
-   gets a French version with unsure words flagged, fills a funder's template, and is approved and
-   sent in two logged steps.
-2. **Water points that need fixing first.** A priority list from the programme data and the two ways
-   of counting "functional" side by side (70.3% fully working vs 85.3% including partly working).
-   The funder report's functionality number links to the points behind it.
+## Run locally
 
-All data is the organisers' fictional pack plus our own labelled synthetic data. Water Care, Kijana
-and every funder are fictional; do not use real organisation names in the app or the deck.
+Use Node 20+ and npm.
 
-## Docs
+```powershell
+npm install
+npm test
+npm run dev -- --hostname 127.0.0.1
+```
 
-Requirements, architecture, the build plan and the team rules are not in this repo. The team shares
-them through the Drive; keep your local copy in `docs/` (git-ignored, so it never gets committed).
+Open http://127.0.0.1:3000. A production check uses `npm run build`, then `npm start -- --hostname 127.0.0.1`.
 
-## Setup (each builder laptop)
+No API key or internet connection is needed after dependencies are installed.
 
-1. Node 20 or newer, npm, Git.
-2. Clone, then `npm install` (after Task 1 has scaffolded the app).
-3. Copy the pack files listed in [data/pack/README.md](data/pack/README.md) from the team Drive.
-4. Create `.env.local` (see Environment). Never commit it, paste it in chat or show it on screen.
-5. `npm test`, then `npm run dev` → http://localhost:3000.
+## Demo data and state
 
-## Environment
-
-| Variable | Values | Purpose |
+| Variable | Default | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | key from the team's approved account | Only needed when `AI_MODE=live` |
-| `AI_MODE` | `replay` (default) or `live` | `replay` returns recorded AI responses from `data/fixtures/ai/` so the demo runs offline |
-| `STATUS_CUTOFF` | `2026-06-30` | Latest-visit cut-off for water point status (end of the Q1 FY2026–27 report period) |
+| `AQUIFER_DATA_DIR` | `data/pack` when its dataset manifest exists; otherwise `data/fixtures/demo` | Dataset manifest, CSVs, inbox and replay responses |
+| `AQUIFER_RUNTIME_DIR` | `data/runtime` | Local records, immutable exports, evidence snapshots and audit log |
 
-## Team workflow
+Each dataset has `dataset.json`, two CSVs, `inbox/<id>.txt` with a JSON sidecar, and `replay/<id>.json`. The original synthetic fixtures are committed and work without the challenge pack. They intentionally have different counts from the larger pack.
 
-- `main` is the demo branch. Work on `feat/<task>` branches; merge only with tests green.
-- One integrator merges to `main` (proposed: Richard). Feature freeze **16:30**.
-- Never commit pack data, keys, `.env*` or organiser-only material.
+The pack and all derivatives remain gitignored. Copy authorised pack files from the team Drive; do not commit report text, recordings derived from it, supporter/gift data, keys or organiser-only material.
 
-## Status
+State is separated by dataset identity and content. Set a **new runtime directory** for a fresh demonstration; existing runs and exports stay intact.
 
-Licence: not chosen yet (private until after judging; the team decides whether to open-source).
+```powershell
+$env:AQUIFER_DATA_DIR = "data/fixtures/demo"
+$env:AQUIFER_RUNTIME_DIR = "data/runtime/my-demo"
+npm run dev -- --hostname 127.0.0.1
+```
+
+## Walkthrough
+
+1. Open a report. Enter a fictional preparer such as **Casey** and an acting person.
+2. Extract facts, review cleaning, validate both definitions, and create the checked French draft.
+3. Build the FDF or Québec template. Each recorded template demonstrates a failed first attempt and a checked correction.
+4. Change a narrative number to an unsupported value: its check turns red and approval is blocked. Correct it and save.
+5. For Québec, a named bilingual reviewer confirms the final French text.
+6. Enter a different approver, such as **Morgan**, and approve the content.
+7. The same approver confirms export, then downloads the immutable Markdown revision.
+8. Follow the evidence links and inspect Activity for attempts, checks, corrections, approval and export.
+
+Changing content invalidates review and approval. Missing observations remain in the full-register denominator and block approval. Changing the standard requires regenerating and reviewing the draft. Named people are demo identities, not authentication.
+
+## Development
+
+- Next.js App Router, TypeScript, React, plain CSS/Tailwind, Zod, papaparse and Vitest.
+- `lib/demo/` is the integrated replay application service. It reuses the Kijana data functions and the existing harness schemas, skill registry and privacy guard.
+- Existing `lib/record/` and live/manual harness experiments are retained for continuity; the new API does not expose those legacy approval/provider paths.
+- `standard/` contains the workflow, registered jobs, rules, profiles and two templates.
+- `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build` are the verification gates.
+- Shared team documents, review evidence and handoffs remain local under ignored `docs/`.
+
+The app uses the Aquifer connected vector wordmark and system UI fonts. The wordmark's accompanying licence is in `public/aquifer-wordmark.LICENSE.txt`.
+
+Private team project. Application licence remains a team decision. No deployment, real email, live AI, authentication or configuration administration is included in this milestone.

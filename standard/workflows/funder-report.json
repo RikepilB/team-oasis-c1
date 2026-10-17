@@ -1,0 +1,118 @@
+{
+  "id": "funder-report",
+  "label_en": "Funder report",
+  "label_fr": "Rapport aux bailleurs de fonds",
+  "hours_today": 1260,
+  "source": "1.2 Workload Inventory, I2",
+  "steps": [
+    {
+      "n": 1,
+      "id": "record",
+      "label_en": "Original",
+      "label_fr": "Original",
+      "done_by": "code",
+      "rules": [],
+      "decides": "—",
+      "output": "FactRecord"
+    },
+    {
+      "n": 2,
+      "id": "extract",
+      "label_en": "Facts",
+      "label_fr": "Faits",
+      "done_by": "ai",
+      "skill": "extract_facts",
+      "rules": [
+        "verbatim_quote",
+        "value_in_quote"
+      ],
+      "decides": "Preparer checks",
+      "output": "facts[]"
+    },
+    {
+      "n": 3,
+      "id": "clean",
+      "label_en": "Cleaning",
+      "label_fr": "Nettoyage",
+      "done_by": "code",
+      "rules": [
+        "status_map",
+        "date_order",
+        "orphan_visits"
+      ],
+      "decides": "Preparer checks the highlights",
+      "output": "changes[]"
+    },
+    {
+      "n": 4,
+      "id": "validate",
+      "label_en": "Numbers",
+      "label_fr": "Chiffres",
+      "done_by": "code",
+      "rules": [
+        "functionality_cross_check"
+      ],
+      "decides": "Preparer",
+      "output": "banner + evidence link"
+    },
+    {
+      "n": 5,
+      "id": "french",
+      "label_en": "French",
+      "label_fr": "Français",
+      "done_by": "ai",
+      "skill": "draft_french",
+      "rules": [
+        "numbers_preserved"
+      ],
+      "decides": "Bilingual coordinator approves",
+      "output": "french"
+    },
+    {
+      "n": 6,
+      "id": "template",
+      "label_en": "Template",
+      "label_fr": "Gabarit",
+      "done_by": "ai",
+      "skill": "fill_template",
+      "rules": [
+        "narrative_numbers_cited",
+        "numeric_field_matches_source"
+      ],
+      "decides": "Preparer edits",
+      "output": "FilledTemplate"
+    },
+    {
+      "n": 7,
+      "id": "review",
+      "label_en": "Review",
+      "label_fr": "Révision",
+      "done_by": "person",
+      "rules": [],
+      "decides": "Bilingual reviewer",
+      "output": "Review"
+    },
+    {
+      "n": 8,
+      "id": "approve",
+      "label_en": "Approval",
+      "label_fr": "Approbation",
+      "done_by": "person",
+      "rules": [
+        "preparer_not_approver"
+      ],
+      "decides": "Grants & Compliance",
+      "output": "Approval"
+    },
+    {
+      "n": 9,
+      "id": "export",
+      "label_en": "Export",
+      "label_fr": "Export",
+      "done_by": "person",
+      "rules": [],
+      "decides": "Approver confirms",
+      "output": "export file"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "ca-fr",
+  "label": "Québec · français",
+  "language": "fr",
+  "number_locale": "fr-CA",
+  "functionality_definition": "both",
+  "templates": ["quebec"],
+  "provider": "replay",
+  "offline": true
+}

@@ -1,0 +1,10 @@
+{
+  "text": "Exemple synthétique indépendant : Q1 FY2026-27 · 29 juillet 2026\nCe relevé inventé sert uniquement aux tests automatisés.\nLe scénario indique 85 %, 22 forages fictifs, 41 comités simulés et 1 900 personnes fictives. Il utilise quatre districts ; deux ont un plan d'essai. Quatre employés simulés vérifient 320 points d'eau fictifs pendant huit jours, pour quatre bailleurs fictifs.",
+  "uncertain_words": [
+    {
+      "word": "relevé",
+      "position": 68,
+      "reason": "Check the preferred French term for this invented test document."
+    }
+  ]
+}

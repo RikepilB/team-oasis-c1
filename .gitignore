@@ -1,0 +1,32 @@
+# dependencies / build
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets: never tracked (variables are documented in README → "Environment")
+.env*
+
+# challenge pack data (fictional, "for hackathon use only"): download from the team Drive, never commit
+data/pack/*
+!data/pack/README.md
+
+# runtime state written by the app (fact records, audit log, AI recordings)
+data/runtime/
+
+# project docs and agent rules stay local: the team shares them through the Drive, not this repo
+# (compliance, privacy and IP; everyone already has the same documents)
+docs/
+AGENTS.md
+CLAUDE.md
+
+# personal session handoffs (written by local agent hooks; never shared)
+handoff.md
+
+# local tooling
+.claude/settings.local.json
+.vercel
+.DS_Store
+Thumbs.db

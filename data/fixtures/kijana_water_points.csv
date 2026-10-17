@@ -1,0 +1,6 @@
+water_point_id,district,settlement,type,install_year,management,committee_women_share,est_users,tariff_model,sensor_installed,grid_x,grid_y
+KJ-MVU-0001,Mvua,Fixtureville North,Borehole,2019,Committee,0.45,320,Pay per bucket,Y,12,40
+KJ-MVU-0002,Mvua,Fixtureville South,Handpump,2020,Committee,0.50,210,Monthly fee,N,14,41
+KJ-KIL-0001,Kilele,Fixtureville East,Borehole,2018,Private operator,0.30,450,Pay per bucket,Y,25,8
+KJ-UPA-0001,Upande,Fixtureville West,Spring,2021,Committee,0.60,180,Free,N,33,19
+KJ-JIW-0001,Jiwe,Fixtureville Central,Handpump,2017,Committee,0.40,260,Monthly fee,Y,47,22

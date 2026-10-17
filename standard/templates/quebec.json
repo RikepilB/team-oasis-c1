@@ -1,0 +1,68 @@
+{
+  "id": "quebec",
+  "language": "fr",
+  "label": "Fondation du Québec",
+  "disclosure": "Rédaction assistée par rejeu de réponses enregistrées. Révision et approbation : {approver}, le {date}. Données fictives.",
+  "numeric": [
+    {
+      "key": "baseline_pct",
+      "label": "Référence historique · définition non précisée",
+      "source": {
+        "kind": "constant",
+        "id": "baseline_pct"
+      }
+    },
+    {
+      "key": "milestone_pct",
+      "label": "Jalon de la troisième année",
+      "source": {
+        "kind": "constant",
+        "id": "milestone_pct"
+      }
+    },
+    {
+      "key": "target_pct",
+      "label": "Cible de la cinquième année",
+      "source": {
+        "kind": "constant",
+        "id": "target_pct"
+      }
+    },
+    {
+      "key": "pct_full",
+      "label": "Entièrement fonctionnels",
+      "source": {
+        "kind": "metric",
+        "id": "pct_full"
+      }
+    },
+    {
+      "key": "pct_incl_partly",
+      "label": "Partiellement fonctionnels inclus",
+      "source": {
+        "kind": "metric",
+        "id": "pct_incl_partly"
+      }
+    },
+    {
+      "key": "count_total",
+      "label": "Points d’eau enregistrés",
+      "source": {
+        "kind": "metric",
+        "id": "count_total"
+      }
+    }
+  ],
+  "narrative": [
+    {
+      "key": "progress",
+      "label": "Progrès",
+      "required": true
+    },
+    {
+      "key": "definition_note",
+      "label": "Définition et limites",
+      "required": true
+    }
+  ]
+}

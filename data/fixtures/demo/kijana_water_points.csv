@@ -1,0 +1,6 @@
+water_point_id,district,settlement,type,install_year,management,committee_women_share,est_users,tariff_model,sensor_installed,grid_x,grid_y
+DEMO-1,River District,Synthetic Settlement 1,Borehole,2020,Committee,0.5,100,Free,N,1,1
+DEMO-2,River District,Synthetic Settlement 2,Borehole,2020,Committee,0.5,100,Free,N,2,1
+DEMO-3,River District,Synthetic Settlement 3,Borehole,2020,Committee,0.5,100,Free,N,3,1
+DEMO-4,River District,Synthetic Settlement 4,Borehole,2020,Committee,0.5,100,Free,N,4,1
+DEMO-5,River District,Synthetic Settlement 5,Borehole,2020,Committee,0.5,100,Free,N,5,1

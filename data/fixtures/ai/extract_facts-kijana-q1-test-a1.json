@@ -1,0 +1,74 @@
+{
+  "facts": [
+    {
+      "label": "functionality_reported",
+      "value": 85,
+      "unit": "%",
+      "period": "Q1 FY2026-27",
+      "quote": "The synthetic status sample records 85%"
+    },
+    {
+      "label": "boreholes_flushed",
+      "value": 22,
+      "unit": "boreholes",
+      "period": "Q1 FY2026-27",
+      "quote": "The training exercise assigns 22 fictional boreholes to a maintenance queue"
+    },
+    {
+      "label": "committees_sending_sms",
+      "value": 41,
+      "unit": "committees",
+      "period": "Q1 FY2026-27",
+      "quote": "The example contains 41 simulated committees"
+    },
+    {
+      "label": "people_connected",
+      "value": 1900,
+      "unit": "people",
+      "period": "Q1 FY2026-27",
+      "quote": "The sample includes 1,900 fictional people"
+    },
+    {
+      "label": "districts_with_draft_plans",
+      "value": "four",
+      "unit": "districts",
+      "period": "Q1 FY2026-27",
+      "quote": "The test scenario uses four districts"
+    },
+    {
+      "label": "districts_with_budgets",
+      "value": "two",
+      "unit": "districts",
+      "period": "Q1 FY2026-27",
+      "quote": "two have a prepared test plan"
+    },
+    {
+      "label": "water_points_total",
+      "value": 320,
+      "unit": "water points",
+      "period": null,
+      "quote": "320 water points"
+    },
+    {
+      "label": "programme_staff",
+      "value": "four",
+      "unit": "staff",
+      "period": null,
+      "quote": "The simulated assignment has four staff checking 320 water points"
+    },
+    {
+      "label": "coordinator_days_per_quarter",
+      "value": "eight",
+      "unit": "days",
+      "period": null,
+      "quote": "eight simulated processing days"
+    },
+    {
+      "label": "funders_reported_to",
+      "value": "four",
+      "unit": "funders",
+      "period": null,
+      "quote": "checking four fictional funders"
+    }
+  ]
+}

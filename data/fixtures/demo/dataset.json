@@ -1,0 +1,37 @@
+{
+  "id": "aquifer-synthetic-v1",
+  "label": "Original synthetic test data",
+  "csv_dir": ".",
+  "constants": [
+    {
+      "id": "baseline_pct",
+      "label": "Historical baseline",
+      "value": 64,
+      "unit": "%",
+      "quote": "Scenario baseline_pct: 64%",
+      "source": "Original synthetic test scenario",
+      "definition": "Synthetic scenario reference",
+      "period": "September 2023 baseline"
+    },
+    {
+      "id": "milestone_pct",
+      "label": "Year-three milestone",
+      "value": 80,
+      "unit": "%",
+      "quote": "Scenario milestone_pct: 80%",
+      "source": "Original synthetic test scenario",
+      "definition": "Synthetic scenario reference",
+      "period": "Year three"
+    },
+    {
+      "id": "target_pct",
+      "label": "Year-five target",
+      "value": 90,
+      "unit": "%",
+      "quote": "Scenario target_pct: 90%",
+      "source": "Original synthetic test scenario",
+      "definition": "Synthetic scenario reference",
+      "period": "Year five"
+    }
+  ]
+}

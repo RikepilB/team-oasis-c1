@@ -1,0 +1,68 @@
+{
+  "id": "fdf",
+  "language": "en",
+  "label": "FDF",
+  "disclosure": "Drafting assisted by replay of recorded responses. Reviewed and approved by {approver} on {date}. Fictional data.",
+  "numeric": [
+    {
+      "key": "baseline_pct",
+      "label": "Historical baseline · definition unspecified",
+      "source": {
+        "kind": "constant",
+        "id": "baseline_pct"
+      }
+    },
+    {
+      "key": "milestone_pct",
+      "label": "Year-three milestone",
+      "source": {
+        "kind": "constant",
+        "id": "milestone_pct"
+      }
+    },
+    {
+      "key": "target_pct",
+      "label": "Year-five target",
+      "source": {
+        "kind": "constant",
+        "id": "target_pct"
+      }
+    },
+    {
+      "key": "pct_full",
+      "label": "Fully working",
+      "source": {
+        "kind": "metric",
+        "id": "pct_full"
+      }
+    },
+    {
+      "key": "pct_incl_partly",
+      "label": "Including partly working",
+      "source": {
+        "kind": "metric",
+        "id": "pct_incl_partly"
+      }
+    },
+    {
+      "key": "count_total",
+      "label": "Registered water points",
+      "source": {
+        "kind": "metric",
+        "id": "count_total"
+      }
+    }
+  ],
+  "narrative": [
+    {
+      "key": "progress",
+      "label": "Progress",
+      "required": true
+    },
+    {
+      "key": "definition_note",
+      "label": "Definition and limitations",
+      "required": true
+    }
+  ]
+}

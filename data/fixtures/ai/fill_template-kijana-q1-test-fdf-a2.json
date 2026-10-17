@@ -1,0 +1,27 @@
+{
+  "fields": [
+    {
+      "key": "progress",
+      "value": "The training sample records 85%. It contains 22 fictional boreholes, 41 simulated committees and 1,900 fictional people.",
+      "cites": [
+        "F-01",
+        "F-02",
+        "F-03",
+        "F-04"
+      ]
+    },
+    {
+      "key": "challenges",
+      "value": "The example uses four districts; two have a prepared test plan. Every entry is an invented input for software testing.",
+      "cites": []
+    },
+    {
+      "key": "definition_note",
+      "value": "70.3% were fully working; 85.3% including partly working",
+      "cites": [
+        "pct_full",
+        "pct_incl_partly"
+      ]
+    }
+  ]
+}

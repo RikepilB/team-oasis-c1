@@ -1,0 +1,10 @@
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import { api,useLanguage,Message } from "@/components/shell";
+import type { EvidenceAnswer } from "@/lib/demo/questions";
+export function EvidenceAssistant({recordId}:{recordId:string}) {
+ const {t,language}=useLanguage();const [question,setQuestion]=useState("");const [answer,setAnswer]=useState<EvidenceAnswer|null>(null);const [error,setError]=useState("");const [busy,setBusy]=useState(false);
+ async function ask(value:string){setBusy(true);setError("");setAnswer(null);try{setAnswer(await api<EvidenceAnswer>("/api/reports/"+encodeURIComponent(recordId)+"/questions",{question:value,language}));}catch(e){setError(e instanceof Error?e.message:t("Lookup failed.","Recherche impossible."));}finally{setBusy(false);}}
+ return <section className="evidence-assistant"><h4>{t("Find the evidence","Trouver les données")}</h4><p className="muted small">{t("Verified API lookup. No model call.","Recherche par API vérifiée. Aucun modèle appelé.")}</p><form onSubmit={e=>{e.preventDefault();void ask(question);}}><label htmlFor="evidence-question">{t("Ask about this report","Question sur ce rapport")}</label><textarea id="evidence-question" maxLength={500} value={question} onChange={e=>setQuestion(e.target.value)} placeholder={t("Where did this number come from?","D’où vient ce chiffre ?")}/><button className="secondary" disabled={busy||question.trim().length<2}>{busy?t("Looking…","Recherche…"):t("Find sources","Trouver les sources")}</button></form><button className="secondary" disabled={busy} onClick={()=>void ask(language==="fr"?"Que manque-t-il ?":"What is missing?")}>{t("What is missing?","Que manque-t-il ?")}</button><Message error={error}/>{answer&&<div className="evidence-answer" role="status"><p>{answer.answer}</p>{answer.citations.map(c=><blockquote key={c.id}><strong>{c.id}</strong><p>{c.quote}</p><span className="small">{c.file} · {c.location}</span></blockquote>)}{answer.links.map(l=><p key={l.href}><Link href={l.href}>{l.label} ↗</Link></p>)}</div>}</section>;
+}

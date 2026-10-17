@@ -17,7 +17,7 @@ async function prepared(funder: "fdf" | "quebec" = "fdf") {
   const current = await getRecord("fixture-q1");
   return runAction("fixture-q1", "template", { actor: "Preparer", preparer: "Preparer", funder_id: funder, ...(current.templates[funder] ? { expected_revision: current.templates[funder]!.revision } : {}) });
 }
-test("inbox and original source survive the journey", async () => { expect(await listInbox()).toHaveLength(2); const original = (await getRecord("fixture-q1")).original_text; const r = await prepared(); expect(r.original_text).toBe(original); expect(r.templates.fdf?.fields.every(f => f.check === "green")).toBe(true); expect((await getLog()).entries.some(e => e.action === "replay" && e.detail.attempt === 2)).toBe(true); });
+test("inbox and original source survive the journey", async () => { expect((await listInbox()).map(r => r.record_id).sort()).toEqual(["demo-river-may", "demo-school-jun", "demo-spring-q1", "demo-spring-q4", "fixture-q1", "fixture-q4"]); const original = (await getRecord("fixture-q1")).original_text; const r = await prepared(); expect(r.original_text).toBe(original); expect(r.templates.fdf?.fields.every(f => f.check === "green")).toBe(true); expect((await getLog()).entries.some(e => e.action === "replay" && e.detail.attempt === 2)).toBe(true); });
 test("full English path repeats without duplicate approvals/exports or network", async () => {
   vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network forbidden"));
   for (let i = 0;i < 2;i++) {

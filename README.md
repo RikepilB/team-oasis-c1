@@ -1,66 +1,90 @@
-# Aquifer — Team Oasis
+# Synapse — Team Oasis
 
-A local, replay-based demonstration of a programme report becoming a sourced, checked, human-approved funder report in English and French.
+A synthetic reporting demo: programme report → sourced facts → checked numbers → English/French funder report → human review → immutable Markdown export.
 
-The application preserves the original report, extracts facts with source quotes, computes water-point metrics in code, checks every numerical field, and requires separate human approval and export confirmation. The Québec template also requires review of its final French text.
+- Workspace: https://synapse-oasis-one.vercel.app
+- Astro introduction: https://synapse-oasis-site.vercel.app
 
-All programme and funder data is fictional. Replay reads prepared responses from disk; the integrated application makes no live model calls and sends no email.
+The workspace uses Next.js App Router, React, TypeScript and Node.js API routes. Astro serves the small static introduction. PostgreSQL on Neon persists documents, evidence snapshots, approvals, exports and hash-chained audit events. Upstash Redis accelerates immutable evidence views; it never supplies approval or export decisions.
 
-## Run locally
+All programme, funder and actor data is fictional. Replay uses authored fixture responses. There are no live model calls, real email intake, authentication, voice, or connected project-management service. Demo names do not establish identity or permissions. Use fictional names only.
 
-Use Node 20+ and npm.
+## Local setup
 
-```powershell
-npm install
-npm test
-npm run dev -- --hostname 127.0.0.1
-```
-
-Open http://127.0.0.1:3000. A production check uses `npm run build`, then `npm start -- --hostname 127.0.0.1`.
-
-No API key or internet connection is needed after dependencies are installed.
-
-## Demo data and state
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `AQUIFER_DATA_DIR` | `data/pack` when its dataset manifest exists; otherwise `data/fixtures/demo` | Dataset manifest, CSVs, inbox and replay responses |
-| `AQUIFER_RUNTIME_DIR` | `data/runtime` | Local records, immutable exports, evidence snapshots and audit log |
-
-Each dataset has `dataset.json`, two CSVs, `inbox/<id>.txt` with a JSON sidecar, and `replay/<id>.json`. The original synthetic fixtures are committed and work without the challenge pack. They intentionally have different counts from the larger pack.
-
-The pack and all derivatives remain gitignored. Copy authorised pack files from the team Drive; do not commit report text, recordings derived from it, supporter/gift data, keys or organiser-only material.
-
-State is separated by dataset identity and content. Set a **new runtime directory** for a fresh demonstration; existing runs and exports stay intact.
+Use Node.js 24 LTS and npm. After installing dependencies, no API key or network is required for file-storage mode.
 
 ```powershell
-$env:AQUIFER_DATA_DIR = "data/fixtures/demo"
-$env:AQUIFER_RUNTIME_DIR = "data/runtime/my-demo"
-npm run dev -- --hostname 127.0.0.1
+npm ci
+$env:SYNAPSE_DATA_DIR = "data/fixtures/demo"
+npm run dev -- --hostname 127.0.0.1 --port 3019
 ```
+
+Open http://127.0.0.1:3019. `npm run dev:site` opens the Astro introduction on port 3020. `PUBLIC_WORKSPACE_URL` sets its destination when building the site.
+
+## Storage and environment
+
+| Variable | Purpose |
+|---|---|
+| `SYNAPSE_STORAGE` | `file` (default) or `postgres`; configured PostgreSQL failures never fall back to files |
+| `SYNAPSE_DATA_DIR` | Dataset manifest, CSVs, inbox and replay responses; use `data/fixtures/demo` for a published demo |
+| `SYNAPSE_RUNTIME_DIR` | File-mode state root; choose a new root for a separate local run |
+| `DATABASE_URL` | Server-only PostgreSQL connection; use a pooled Neon URL for Vercel |
+| `SYNAPSE_NAMESPACE` | Stable deployment namespace; separates datasets and preserves state across deployment path changes |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Server-only Vercel-managed Upstash Redis REST connection |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Alternate names for the same Redis configuration |
+
+Legacy `AQUIFER_DATA_DIR`/`AQUIFER_RUNTIME_DIR` are supported. Without an explicit data directory, local mode prefers an available challenge pack. Pack files, derivatives, runtime files and `.env*` are ignored and excluded from Vercel uploads. Only independently authored synthetic fixtures are published.
+
+For PostgreSQL, set `DATABASE_URL` securely in your environment, run `npm run db:migrate` against a **direct** connection, then run the application with the pooled URL and `SYNAPSE_STORAGE=postgres`. Never put credentials in source, browser variables, command arguments, logs, or Git.
+
+The initial PostgreSQL adapter stores validated JSON documents transactionally. A namespace advisory lock serializes state and audit writes across instances. Database triggers reject changes to report sources, evidence snapshots, exported snapshots, and audit events. This is a demo-scale adapter; normalized tables, authentication, tenant isolation and fine-grained authorization remain future work.
 
 ## Walkthrough
 
-1. Open a report. Enter a fictional preparer such as **Casey** and an acting person.
-2. Extract facts, review cleaning, validate both definitions, and create the checked French draft.
-3. Build the FDF or Québec template. Each recorded template demonstrates a failed first attempt and a checked correction.
-4. Change a narrative number to an unsupported value: its check turns red and approval is blocked. Correct it and save.
-5. For Québec, a named bilingual reviewer confirms the final French text.
-6. Enter a different approver, such as **Morgan**, and approve the content.
-7. The same approver confirms export, then downloads the immutable Markdown revision.
-8. Follow the evidence links and inspect Activity for attempts, checks, corrections, approval and export.
+1. Open a report from Inbox or Reports. Use fictional preparer **Casey**.
+2. Extract facts, inspect cleaning, compare both functionality definitions, and create the checked French draft.
+3. Build FDF English or Québec French. Recorded attempts demonstrate a numerical failure and one checked correction.
+4. Edit a narrative with an unsupported number to see approval blocked. Correct and save it.
+5. A bilingual reviewer such as **Camille** confirms the final French funder text and its meaning.
+6. A different actor, such as **Morgan**, approves the current content revision.
+7. The approving person separately confirms export, then downloads the approved Markdown with sources and disclosure.
+8. Follow the saved evidence links and inspect Activity for attempts, corrections, approvals and exports.
 
-Changing content invalidates review and approval. Missing observations remain in the full-register denominator and block approval. Changing the standard requires regenerating and reviewing the draft. Named people are demo identities, not authentication.
+Content/evidence changes invalidate dependent approvals. Missing observations stay in the full-register denominator and block approval. Empty datasets display unavailable percentages. Export checks the exact approved revision; concurrent duplicate clicks create one immutable export.
 
-## Development
+## Performance and data access
 
-- Next.js App Router, TypeScript, React, plain CSS/Tailwind, Zod, papaparse and Vitest.
-- `lib/demo/` is the integrated replay application service. It reuses the Kijana data functions and the existing harness schemas, skill registry and privacy guard.
-- Existing `lib/record/` and live/manual harness experiments are retained for continuity; the new API does not expose those legacy approval/provider paths.
-- `standard/` contains the workflow, registered jobs, rules, profiles and two templates.
-- `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build` are the verification gates.
-- Shared team documents, review evidence and handoffs remain local under ignored `docs/`.
+- Next routes split by page; the evidence assistant is imported only when opened.
+- Simultaneous identical browser GETs share one in-flight request, without retaining stale approvals.
+- The report catalog reads all report summaries in one transaction instead of one transaction per record.
+- Source Sans 3 is bundled as WOFF2, with its OFL and pinned provenance preserved.
+- HTTP compression is enabled; font assets have cache headers.
+- Redis caches only saved evidence views, keyed by dataset, namespace, snapshot and filters, with a one-hour TTL. Its responses are schema checked. Unavailable/corrupt cache entries fall back to PostgreSQL; mutable/current views bypass caching. `X-Synapse-Cache` reports `hit`, `miss` or `bypass`.
+- `/api/health` shows storage mode and Redis configuration without exposing credentials. Configuration alone does not prove Redis availability.
 
-The app uses the Aquifer connected vector wordmark and system UI fonts. The wordmark's accompanying licence is in `public/aquifer-wordmark.LICENSE.txt`.
+## API and MCP
 
-Private team project. Application licence remains a team decision. No deployment, real email, live AI, authentication or configuration administration is included in this milestone.
+Report operations live under `/api/reports`. The contextual questions endpoint returns verified source quotations and exact snapshot links; unmatched questions return an explicit unavailable answer. It is deterministic API retrieval, not a general chatbot.
+
+`integrations/mcp/server.mjs` is an optional local, read-only stdio adapter for `list_reports`, `explain_report`, and `find_evidence`. See [its setup](integrations/mcp/README.md). It is not automatically installed in an agent and cannot approve or export reports.
+
+## Verify and deploy
+
+```powershell
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build:all
+```
+
+The default suite skips real PostgreSQL tests. To run them, set `SYNAPSE_DATABASE_TEST=1` and a dedicated test `DATABASE_URL`, then run `npx vitest run tests/database/postgres.test.ts`. Tests use isolated namespaces and preserve audit history. The HTTP smoke test mutates fictional reports and creates logged exports; run it only against a designated demo:
+
+```powershell
+node scripts/smoke-demo.mjs https://your-demo.example
+```
+
+Root `vercel.json` deploys Next.js. Set the server-only database and Redis variables in Vercel, plus `SYNAPSE_STORAGE=postgres`, `SYNAPSE_DATA_DIR=data/fixtures/demo` and a stable `SYNAPSE_NAMESPACE`. Review `.vercelignore` before every upload. No secrets, challenge pack or local session history belongs in a deployment.
+
+For the separate static site, set `PUBLIC_WORKSPACE_URL`, run `npm run build:site`, then `node scripts/prepare-site-deploy.mjs`. Link `apps/site/dist` to its separate Vercel project and deploy it using the generated static configuration. This avoids inheriting the Next install/build commands.
+
+Public demos are for fictional data only. Real use requires identity, access controls, retention and operational review. Analytics and real external intake are not enabled. Application licensing remains a team decision; third-party fonts retain their own licenses.

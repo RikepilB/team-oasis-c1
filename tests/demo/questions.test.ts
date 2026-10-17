@@ -1,0 +1,13 @@
+import { beforeEach,afterEach,test,expect } from "vitest";
+import { mkdtempSync,rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { answerQuestion } from "@/lib/demo/questions";
+import { runAction,getRecord } from "@/lib/demo/workflow";
+let dir:string;
+beforeEach(()=>{dir=mkdtempSync(path.join(tmpdir(),"synapse-question-"));process.env.AQUIFER_DATA_DIR="data/fixtures/demo";process.env.AQUIFER_RUNTIME_DIR=dir;});
+afterEach(()=>{delete process.env.AQUIFER_DATA_DIR;delete process.env.AQUIFER_RUNTIME_DIR;rmSync(dir,{recursive:true,force:true});});
+test("missing preparation is explained without inventing source facts",async()=>{const a=await answerQuestion("fixture-q1",{question:"What is missing?"});expect(a.answer).toContain("not been extracted");expect(a.citations).toEqual([]);});
+test("matching facts quote their exact source and snapshot",async()=>{await runAction("fixture-q1","extract",{actor:"Casey"});const r=await getRecord("fixture-q1");const a=await answerQuestion("fixture-q1",{question:"Where is functionality?"});expect(a.citations.length).toBeGreaterThan(0);for(const c of a.citations)expect(r.original_text).toContain(c.quote);expect(a.links.some(l=>l.href.includes(r.snapshot_id))).toBe(true);});
+test("no match stays explicitly unavailable in French",async()=>{await runAction("fixture-q1","extract",{actor:"Casey"});const a=await answerQuestion("fixture-q1",{question:"unicorn spaceship",language:"fr"});expect(a.answer).toContain("Aucun fait");expect(a.citations).toEqual([]);});
+test("unsupported fields and oversized questions are rejected",async()=>{await expect(answerQuestion("fixture-q1",{question:"x".repeat(501)})).rejects.toThrow();await expect(answerQuestion("fixture-q1",{question:"Where?",path:"../../secret"})).rejects.toThrow();});

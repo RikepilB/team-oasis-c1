@@ -83,6 +83,8 @@ The default suite skips real PostgreSQL tests. To run them, set `SYNAPSE_DATABAS
 node scripts/smoke-demo.mjs https://your-demo.example
 ```
 
+To give every screen something to show, `npm run seed:demo -- <base-url>` walks the untouched demo reports to different stages through the same API: one received, one being cleaned, one with a draft, one waiting for the bilingual review, one approved and one exported. It uses the demo people, skips any report that already has progress, and logs every step like a person would.
+
 Root `vercel.json` deploys Next.js. Set the server-only database and Redis variables in Vercel, plus `SYNAPSE_STORAGE=postgres`, `SYNAPSE_DATA_DIR=data/fixtures/demo` and a stable `SYNAPSE_NAMESPACE`. Review `.vercelignore` before every upload. No secrets, challenge pack or local session history belongs in a deployment.
 
 For the separate static site, set `PUBLIC_WORKSPACE_URL`, run `npm run build:site`, then `node scripts/prepare-site-deploy.mjs`. Link `apps/site/dist` to its separate Vercel project and deploy it using the generated static configuration. This avoids inheriting the Next install/build commands.

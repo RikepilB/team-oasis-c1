@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { useLanguage, useRemote, Message, Loading } from "@/components/shell";
+import { GuardedButton } from "@/components/ui";
 import { PRESETS, SOURCES, checkTemplate, slug, toStandardFile } from "@/lib/demo/template-kit.mjs";
 import type { loadStandard } from "@/lib/demo/standard";
 type Numeric = { key: string; label: string; source: { kind: string; id: string } };
@@ -112,7 +113,7 @@ export function TemplateBuilder() {
           {draft.narrative.map((f, i) => <div className="preview-section" key={i}><h4>{f.label || "…"}</h4><p className="muted small">{f.guidance || t("Cited text from the report.", "Texte sourcé tiré du rapport.")}</p></div>)}
           <p className="preview-disclosure">{toStandardFile(draft).disclosure}</p></section>
         <section className="panel builder-checks"><h3>{t("Checks", "Contrôles")}</h3>{problems.length === 0 ? <p className="success-text">✓ {t("Ready for review", "Prêt pour révision")}</p> : <ul>{problems.map(p => <li key={p} className="warning-text">{p}</li>)}</ul>}
-          <div className="template-actions"><button type="button" className="primary" disabled={!draft.id} onClick={save}>{t("Save draft", "Enregistrer l’ébauche")}</button><button type="button" className="secondary" disabled={!draft.id} onClick={() => download(draft)}>{t("Download JSON", "Télécharger le JSON")}</button></div>
+          <div className="template-actions"><GuardedButton className="primary" reason={!draft.id ? t("Give the template a name first, under Basics.", "Donnez d’abord un nom au gabarit, dans Informations.") : null} onClick={save}>{t("Save draft", "Enregistrer l’ébauche")}</GuardedButton><GuardedButton className="secondary" reason={!draft.id ? t("Give the template a name first, under Basics.", "Donnez d’abord un nom au gabarit, dans Informations.") : null} onClick={() => download(draft)}>{t("Download JSON", "Télécharger le JSON")}</GuardedButton></div>
           {saved && <p role="status" className="success-text small">✓ {saved} <Link href="/templates">{t("Back to templates", "Retour aux gabarits")}</Link></p>}
           <p className="muted small">{t("Then check it:", "Puis vérifiez :")} <code>npm run template -- check {draft.id || "<id>"}.json</code></p></section>
       </aside>

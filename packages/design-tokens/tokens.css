@@ -1,3 +1,40 @@
-/* Synapse: shared by the Astro site and Next workspace. */
+/* Synapse design tokens v3.2 · shared by the Astro site and Next workspace. See design.md. */
 @font-face{font-family:"Source Sans 3";src:url("../../public/fonts/source-sans-3/SourceSans3VF-Upright.woff2") format("woff2");font-style:normal;font-weight:200 900;font-display:swap}
-:root{--color-primary:#0B4F6C;--color-accent:#1B9AAA;--color-bg:#F7FAFB;--color-surface:#FFFFFF;--color-border:#D9E2E7;--color-text:#1C2B33;--color-text-muted:#5B6B73;--color-attention:#E0A100;--color-urgent:#C0392B;--color-done:#2E8B57;--font-body:"Source Sans 3";--water:var(--color-primary);--accent:var(--color-accent);--chalk:var(--color-bg);--sand:#E8F1F4;--slate:var(--color-text-muted);--line:var(--color-border);--surface:var(--color-surface);--error:#795400;--ok:#1B6840;--warn:#795400;--text:var(--color-text);--attention:var(--color-attention);--urgent:var(--color-urgent);--done:var(--color-done);--primary:var(--color-primary);--bg:var(--color-bg);--muted:var(--color-text-muted);--border:var(--color-border)}
+:root{
+  /* Bone: surfaces. Pure white is never used. */
+  --bone-50:#FBF9F4;--bone-100:#F4F0E6;--bone-200:#E9E3D6;
+  /* Ink: text */
+  --ink-900:#1A262B;--ink-600:#3E4B50;
+  /* Lake: the only brand hue, used rarely */
+  --lake-900:#0B3B48;--lake-700:#0F4C5C;--lake-600:#1E5661;--lake-100:#D7E5E8;
+  /* Status: three meanings only */
+  --status-attention:#6B4507;--status-attention-fill:#F2EEE6;
+  --status-urgent:#8A2A24;--status-urgent-fill:#F4EDE8;
+  --status-done:#21543E;--status-done-fill:#EEEFE9;
+  /* Lines: ink at low opacity, so dividers sit quietly on bone and glass */
+  --hairline:rgba(26,38,43,.08);--line-soft:rgba(26,38,43,.12);--line-strong:rgba(26,38,43,.45);
+
+  /* Spacing: a generous 4px-based scale with large steps for Apple-like breathing room */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-7:32px;--space-8:40px;--space-9:48px;--space-10:64px;--space-11:80px;--space-12:96px;
+  /* Shape */
+  --radius-control:10px;--radius-card:16px;--radius-glass:20px;--radius-chip:999px;
+  /* Depth: one soft shadow, one restrained raised (neumorphic) pair, one glass recipe */
+  --shadow-soft:0 1px 2px rgba(26,38,43,.04),0 8px 24px rgba(15,76,92,.06);
+  --shadow-lift:0 2px 6px rgba(26,38,43,.06),0 18px 48px rgba(15,76,92,.10);
+  --neu-raised:6px 6px 16px rgba(26,38,43,.06),-6px -6px 16px rgba(251,249,244,.9);
+  --neu-inset:inset 2px 2px 6px rgba(26,38,43,.07),inset -2px -2px 6px rgba(251,249,244,.9);
+  --glass-bg:rgba(251,249,244,.72);--glass-border:rgba(251,249,244,.6);--glass-blur:blur(18px) saturate(120%);
+  /* Motion */
+  --ease:cubic-bezier(.2,.8,.2,1);--dur-fast:120ms;--dur:200ms;
+
+  /* Type */
+  --font-body:var(--font-inter,"Inter");--font-stack:var(--font-inter,"Inter"),-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --type-page-title:32px;--type-section:24px;--type-subsection:18px;--type-cta:16px;--type-body:16px;--type-small:14px;--type-caption:12px;
+
+  /* Legacy names used across the app, mapped onto v3.2 */
+  --color-primary:var(--lake-700);--color-accent:var(--lake-700);--color-bg:var(--bone-200);--color-surface:var(--bone-50);--color-border:var(--line-soft);
+  --color-text:var(--ink-900);--color-text-muted:var(--ink-600);--color-attention:var(--status-attention);--color-urgent:var(--status-urgent);--color-done:var(--status-done);
+  --water:var(--ink-900);--accent:var(--lake-700);--chalk:var(--bone-100);--sand:var(--bone-100);--slate:var(--ink-600);--line:var(--line-soft);--surface:var(--bone-50);
+  --error:var(--status-attention);--ok:var(--status-done);--warn:var(--status-attention);--text:var(--ink-900);
+  --attention:var(--status-attention);--urgent:var(--status-urgent);--done:var(--status-done);--primary:var(--lake-700);--bg:var(--bone-200);--muted:var(--ink-600);--border:var(--line-soft)
+}

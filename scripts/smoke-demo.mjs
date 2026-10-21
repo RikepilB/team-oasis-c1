@@ -11,7 +11,7 @@ for(let cycle=0;cycle<2;cycle++)for(const id of ["fixture-q1","fixture-q4"]){
   r=await request(`/api/reports/${id}/template`,{actor:"Casey",funder_id:funder,...(r.templates[funder]?{expected_revision:r.templates[funder].revision}:{})});
   let input={actor:"Morgan",funder_id:funder,expected_revision:r.templates[funder].revision};
   await request(`/api/reports/${id}/approve`,{...input,actor:"Casey"},true);
-  if(funder==="quebec"){await request(`/api/reports/${id}/approve`,input,true);await request(`/api/reports/${id}/review`,{...input,actor:"Camille"});}
+  if(funder==="quebec"){await request(`/api/reports/${id}/approve`,input,true);await request(`/api/reports/${id}/review`,{...input,actor:"Camille"},true);for(const item of (await request(`/api/reports/${id}`)).french.items.filter(i=>!i.decision))await request(`/api/reports/${id}/french_item`,{actor:"Camille",key:item.id,decision:"approve"});await request(`/api/reports/${id}/review`,{...input,actor:"Camille"});}
   await request(`/api/reports/${id}/approve`,input);
   if(cycle===0&&funder==="fdf"){
    const field=r.templates[funder].fields.find(f=>f.kind==="narrative");const stale=input.expected_revision;

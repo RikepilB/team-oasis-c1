@@ -13,7 +13,8 @@
     "preview:site": "npm run preview --workspace @synapse/site",
     "db:migrate": "node scripts/migrate.mjs",
     "build:all": "npm run build && npm run build:site",
-    "template": "node scripts/template.mjs"
+    "template": "node scripts/template.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

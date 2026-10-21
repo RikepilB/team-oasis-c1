@@ -28,7 +28,7 @@
   --ease:cubic-bezier(.2,.8,.2,1);--dur-fast:120ms;--dur:200ms;
 
   /* Type */
-  --font-body:"Inter";--font-stack:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --font-body:var(--font-inter,"Inter");--font-stack:var(--font-inter,"Inter"),-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
   --type-page-title:32px;--type-section:24px;--type-subsection:18px;--type-cta:16px;--type-body:16px;--type-small:14px;--type-caption:12px;
 
   /* Legacy names used across the app, mapped onto v3.2 */

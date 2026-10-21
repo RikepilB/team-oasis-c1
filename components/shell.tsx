@@ -3,6 +3,8 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import "./workspace-shell.css";
+import "./synapse-theme.css";
+import { BackBar, Tip } from "@/components/ui";
 import { AssistantPanel } from "@/components/assistant-panel";
 import { SearchBar } from "@/components/search-bar";
 import { Guide } from "@/components/guide";
@@ -38,7 +40,17 @@ function useWide() { return useSyncExternalStore(l => { const m = matchMedia(WID
 export function useAssistant() { const prefs = usePreferences(); const wide = useWide(); const open = prefs.assistantOpen ?? wide; return { open, setOpen: (v: boolean) => savePreferences({ assistantOpen: v }) }; }
 export function useLanguage() { const { language } = usePreferences(); return { language, setLanguage: (l: "en" | "fr") => savePreferences({ language: l }), t: (en: string, fr: string) => language === "fr" ? fr : en }; }
 
-const WORKSPACE: [string, string, string][] = [["/", "Inbox", "Boîte de réception"], ["/reports", "Reports", "Rapports"], ["/approvals", "Approvals", "Approbations"], ["/templates", "Templates", "Gabarits"]];
+const WORKSPACE: [string, string, string, string][] = [["/", "Inbox", "Boîte de réception", "inbox"], ["/reports", "Reports", "Rapports", "reports"], ["/approvals", "Approvals", "Approbations", "approvals"], ["/templates", "Templates", "Gabarits", "templates"]];
+// Small line icons for the main sections only, so the rail stays readable when collapsed.
+const ICONS: Record<string, React.ReactNode> = {
+  inbox: <path d="M2.5 9.5 4.6 4.1A1 1 0 0 1 5.5 3.5h9a1 1 0 0 1 .9.6l2.1 5.4M2.5 9.5V15a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V9.5M2.5 9.5h4l1.2 2h4.6l1.2-2h4" />,
+  reports: <path d="M5.5 2.5h6l3 3v11a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1v-13a1 1 0 0 1 1-1ZM11.5 2.5v3h3M7.5 10h5M7.5 13h5" />,
+  approvals: <path d="M10 17.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM6.8 10.2l2.2 2.2 4.3-4.6" />,
+  templates: <path d="M3.5 3.5h13v13h-13zM3.5 8h13M8 8v8.5" />,
+  library: <path d="M3.5 5.5a1 1 0 0 1 1-1h4l1.5 1.5h5.5a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1z" />,
+  settings: <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM16.2 11.8l1.3 1-1.6 2.8-1.6-.6a6 6 0 0 1-1.6.9l-.3 1.6H9.2l-.3-1.6a6 6 0 0 1-1.6-.9l-1.6.6-1.6-2.8 1.3-1a6 6 0 0 1 0-1.8l-1.3-1 1.6-2.8 1.6.6a6 6 0 0 1 1.6-.9l.3-1.6h3.2l.3 1.6a6 6 0 0 1 1.6.9l1.6-.6 1.6 2.8-1.3 1a6 6 0 0 1 0 1.8Z" />,
+};
+const Icon = ({ name }: { name: string }) => <svg className="nav-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{ICONS[name]}</svg>;
 // Files & resources is one folder: sources first, then everything that explains a number.
 const RESOURCES: [string, string, string][] = [["/evidence/water-points", "Evidence", "Données"], ["/standard#workflow", "Workflow & rules", "Parcours et règles"], ["/log", "Activity log", "Journal d’activité"], ["/standard#prompts", "Prompts", "Consignes"], ["/standard#skills", "Skills", "Compétences"]];
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -54,6 +66,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
   // Desktop: collapse the sidebar to the left (remembered). Phone: open it over the page.
   const toggleSidebar = () => { if (matchMedia("(max-width: 860px)").matches) setNavigationOpen(!navigationOpen); else savePreferences({ sidebarCollapsed: !prefs.sidebarCollapsed }); };
   const item = ([href, en, fr]: [string, string, string]) => <Link key={href} href={href} onClick={close} aria-current={pathname === href ? "page" : undefined}>{t(en, fr)}</Link>;
+  // Main sections: icon + label. Collapsed, the label becomes a tooltip.
+  const mainItem = ([href, en, fr, icon]: [string, string, string, string]) => <Link key={href} href={href} onClick={close} className="nav-main" data-label={t(en, fr)} aria-current={pathname === href || (href !== "/" && pathname.startsWith(href + "/")) ? "page" : undefined}><Icon name={icon} /><span className="nav-text">{t(en, fr)}</span></Link>;
+  const recent = (reports.data ?? []).slice(0, 4);
   return <div className={"synapse-shell" + (assistant.open ? " has-assistant" : "") + (prefs.sidebarCollapsed ? " sidebar-collapsed" : "")}>
     <a className="skip-link" href="#main">{t("Skip to content", "Aller au contenu")}</a>
     <header className="synapse-topbar">
@@ -71,15 +86,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="synapse-body">
       <aside id="synapse-sidebar" className={"synapse-sidebar" + (navigationOpen ? " is-open" : "")} onKeyDown={e => { if (e.key === "Escape") close(); }}>
         <nav aria-label={t("Main navigation", "Navigation principale")}>
-          <p className="sidebar-label">{t("Workspace", "Espace de travail")}</p>{WORKSPACE.map(item)}
-          <details className="sidebar-group" open><summary>{t("Files & resources", "Fichiers et ressources")}</summary>{item(["/sources", "Files & sources", "Fichiers et sources"])}<div className="sidebar-tree">{RESOURCES.map(item)}</div></details>
-          <p className="sidebar-label">{t("Demo reports", "Rapports de démonstration")}</p>
-          {reports.data?.map(r => <Link key={r.record_id} href={"/runs/" + r.record_id} onClick={close} aria-current={pathname === "/runs/" + r.record_id ? "page" : undefined} className="sidebar-report"><span className="sidebar-dot" data-status={getReportStatus(r)} aria-hidden="true" />{r.title}</Link>)}
-          {reports.error && <p className="sidebar-note">{t("Reports unavailable", "Rapports indisponibles")}</p>}
+          <div className="nav-section">{WORKSPACE.map(mainItem)}</div>
+          <details className="nav-group" open>
+            <summary data-label={t("Library", "Bibliothèque")}><Icon name="library" /><span className="nav-text">{t("Library", "Bibliothèque")}</span><svg className="nav-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></summary>
+            <div className="nav-sub">{item(["/sources", "Files & sources", "Fichiers et sources"])}{RESOURCES.map(item)}</div>
+          </details>
+          <div className="nav-recent">
+            <p className="sidebar-label">{t("Recent reports", "Rapports récents")}</p>
+            {recent.map(r => <Link key={r.record_id} href={"/runs/" + r.record_id} onClick={close} aria-current={pathname === "/runs/" + r.record_id ? "page" : undefined} className="sidebar-report" title={r.title}><span className="sidebar-dot" data-status={getReportStatus(r)} aria-hidden="true" /><span className="nav-text">{r.title}</span></Link>)}
+            {(reports.data?.length ?? 0) > recent.length && <Link href="/reports" onClick={close} className="nav-more">{t("All reports", "Tous les rapports")} <span aria-hidden="true">→</span></Link>}
+            {reports.error && <p className="sidebar-note">{t("Reports unavailable. Reload the page to try again.", "Rapports indisponibles. Rechargez la page pour réessayer.")}</p>}
+          </div>
         </nav>
-        <div className="sidebar-footer">{item(["/settings", "Settings", "Paramètres"])}<PersonMenu onNavigate={close} /><p className="sidebar-note">{t("A person reviews every report.", "Une personne révise chaque rapport.")}</p></div>
+        <div className="sidebar-footer"><PersonMenu onNavigate={close} /><Tip text={t("Settings", "Paramètres")}><Link href="/settings" onClick={close} className="nav-icon-link" aria-current={pathname === "/settings" ? "page" : undefined} aria-label={t("Settings", "Paramètres")}><Icon name="settings" /></Link></Tip></div>
       </aside>
-      <div className="synapse-main"><div className="synapse-content">{children}</div>
+      <div className="synapse-main"><div className="synapse-content"><BackBar />{children}</div>
         <footer className="synapse-footer"><span>Synapse · Team Oasis</span><span>{t("Every result has a source. Every decision has a person.", "Chaque résultat a sa source. Chaque décision a sa personne.")}</span></footer></div>
       <Guide open={guideOpen} onClose={() => setGuideOpen(false)} />
       {assistant.open && <aside id="synapse-assistant" className="synapse-assistant" aria-label={t("Evidence assistant", "Assistant de données")}><Suspense fallback={null}><AssistantPanel reports={reports.data ?? []} onClose={() => assistant.setOpen(false)} /></Suspense></aside>}

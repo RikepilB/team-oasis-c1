@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { getRecord, listRecords, runAction } from "@/lib/demo/workflow";
-import { atomic, context, runtimeExists } from "@/lib/demo/store";
+import { aiMode, getRecord, listRecords, runAction } from "@/lib/demo/workflow";
+import { atomic, context, runtimeExists, serialized } from "@/lib/demo/store";
 import { Sidecar } from "@/lib/demo/types";
 export type CatalogTemplate = { funder_id: "fdf" | "quebec"; language: "en" | "fr"; revision: number; approved_revision: number | null; approved: boolean; exported: boolean; prepared: boolean; french_reviewed: boolean; blocking_checks: string[] };
 export type Priority = { level: "P0" | "P1" | "P2"; set_by: string; set_at: string; reason: string };
@@ -21,25 +21,30 @@ function prioritiesOf(dir: string): Record<string, Priority> {
   try { return JSON.parse(readFileSync(file, "utf8")).priorities ?? {}; } catch { return {}; }
 }
 // A fresh demo replays the sample steps in seed.json once, so "Needs action" isn't empty on first open.
-// Set SYNAPSE_SEED=off to start every report from scratch.
+// Set SYNAPSE_SEED=off to start every report from scratch. The sample is recorded work, so AI_MODE=live skips
+// it rather than making billable model calls on the first Inbox load.
 type SeedStep = { id: string; action: string; actor: string; funder_id?: "fdf" | "quebec" };
 let seeding: Promise<void> | null = null;
 async function seedOnce(): Promise<void> {
-  if (process.env.SYNAPSE_SEED === "off") return;
+  if (process.env.SYNAPSE_SEED === "off" || aiMode() === "live") return;
   const c = context();
   const file = path.join(c.dir, "seed.json");
+  if (!existsSync(file)) return;
   const marker = path.join(c.runtime, "seeded.json");
-  if (!existsSync(file) || runtimeExists(marker)) return;
   const steps: SeedStep[] = JSON.parse(readFileSync(file, "utf8")).steps ?? [];
-  try {
-    for (const s of steps) {
-      const current = await getRecord(s.id);
-      const tpl = s.funder_id ? current.templates[s.funder_id] : undefined;
-      await runAction(s.id, s.action, { actor: s.actor, preparer: "Daniel", ...(s.funder_id ? { funder_id: s.funder_id } : {}), ...(tpl ? { expected_revision: tpl.revision } : {}) });
-    }
-  } finally {
-    // Written even if a step fails, so the sample is never replayed twice.
+  // Claim the sample before running it, under the shared lock (one PostgreSQL transaction in production), so
+  // another server instance never replays it over reports people have since reviewed or approved. The claim
+  // stays if a step fails: the sample is never replayed twice.
+  const claimed = await serialized(c.runtime, async () => {
+    if (runtimeExists(marker)) return false;
     atomic(marker, { seeded_at: new Date().toISOString(), steps: steps.length });
+    return true;
+  });
+  if (!claimed) return;
+  for (const s of steps) {
+    const current = await getRecord(s.id);
+    const tpl = s.funder_id ? current.templates[s.funder_id] : undefined;
+    await runAction(s.id, s.action, { actor: s.actor, preparer: "Daniel", ...(s.funder_id ? { funder_id: s.funder_id } : {}), ...(tpl ? { expected_revision: tpl.revision } : {}) });
   }
 }
 export async function reportCatalog(): Promise<Catalog> {

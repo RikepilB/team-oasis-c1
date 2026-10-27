@@ -6,7 +6,10 @@ export const Field = z.object({ key: z.string(), label: z.string(), kind: z.enum
 export const DemoTemplate = z.object({
   standard_version: z.string().default(""), funder_id: z.enum(["fdf", "quebec"]), language: z.enum(["en", "fr"]), revision: z.number().int().positive(), preparer: z.string(), fields: z.array(Field), checks: z.array(RuleResult),
   review: z.object({ actor: z.string(), revision: z.number(), at: z.string() }).nullable(),
-  approval: z.object({ approver: z.string(), approved_revision: z.number(), content_approved_at: z.string(), sent_at: z.string().nullable() }).nullable(), disclosure: z.string().nullable()
+  approval: z.object({ approver: z.string(), approved_revision: z.number(), content_approved_at: z.string(), sent_at: z.string().nullable() }).nullable(), disclosure: z.string().nullable(),
+  // Which AI mode drafted this revision, kept so the export states its real source after AI_MODE changes.
+  // Absent on drafts made before it was recorded, which were all replays.
+  ai_mode: z.enum(["live", "replay"]).optional()
 });
 export type DemoTemplate = z.infer<typeof DemoTemplate>;
 export const EvidenceView = z.object({

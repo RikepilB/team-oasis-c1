@@ -6,6 +6,7 @@ import { databasePool,closeDatabase,postgresTransaction } from "@/lib/database/r
 import { context,atomic,readJson } from "@/lib/demo/store";
 import { runAction,getRecord,getLog,getExport } from "@/lib/demo/workflow";
 import { answerQuestion } from "@/lib/demo/questions";
+import { reportCatalog } from "@/lib/demo/catalog";
 const real=test.runIf(process.env.SYNAPSE_DATABASE_TEST==="1");
 beforeEach(()=>{if(process.env.SYNAPSE_DATABASE_TEST==="1"){process.env.SYNAPSE_STORAGE="postgres";process.env.SYNAPSE_DATA_DIR="data/fixtures/demo";process.env.SYNAPSE_RUNTIME_DIR="data/runtime/pg-test-"+randomUUID();}});
 afterAll(async()=>{await closeDatabase();});
@@ -77,3 +78,11 @@ real("a stable deployment namespace survives a different runtime root",async()=>
   const resumed=await getRecord("fixture-q1");expect(resumed.revision).toBe(r.revision);expect(resumed.snapshot_id).toBe(r.snapshot_id);expect((await getLog()).valid).toBe(true);
  }finally{delete process.env.SYNAPSE_NAMESPACE;}
 });
+real("PostgreSQL claims the sample seed in the database, so a new instance never replays it",async()=>{
+ delete process.env.SYNAPSE_SEED;
+ const first=await reportCatalog();const entries=(await getLog()).entries.length;
+ // A new server instance starts without the first one's local files.
+ rmSync(context().runtime,{recursive:true,force:true});
+ await reportCatalog();
+ expect(first.filter(r=>r.templates.length)).toHaveLength(3);expect((await getLog()).entries.length).toBe(entries);
+},30000);

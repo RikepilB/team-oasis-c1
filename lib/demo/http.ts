@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { DemoError } from "@/lib/demo/types";
+// For responses built only from files shipped with the build (the standard, SKILL.md files): the CDN may keep
+// them until the next deployment, which starts with an empty cache. Browsers still revalidate every time.
+export const SHIPPED_FILES_CACHE = "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800";
 export async function respond(work: () => Promise<unknown>) {
   try {
     return NextResponse.json(await work(), { headers: { "Cache-Control": "no-store" } });

@@ -31,11 +31,14 @@ export function Inbox({ mode = "inbox" }: { mode?: "inbox" | "reports" }) {
   const [status, setStatus] = useState<ReportStatus | "">("");
   const [project, setProject] = useState("");
   const [funder, setFunder] = useState("");
-  const [newestFirst, setNewestFirst] = useState(true);
+  const [soonestFirst, setSoonestFirst] = useState(true);
   const rows = data ?? [];
   const projects = [...new Set(rows.map(r => r.project).filter((v): v is string => !!v))].sort();
   const funders = [...new Set(rows.map(r => r.funder).filter((v): v is string => !!v))].sort();
-  const items = filterReports(rows, view, query, { status, project, funder, me }).sort((a, b) => priorityRank(a) - priorityRank(b) || (newestFirst ? -1 : 1) * ((dueDate(a)?.date ?? "9999") + a.received_date).localeCompare((dueDate(b)?.date ?? "9999") + b.received_date));
+  // Priority first, then the nearest deadline (design.md: priority, then due date). Flipping the Due column
+  // reverses dated reports only; a report with no deadline always stays after the dated ones.
+  const due = (r: CatalogRecord) => dueDate(r)?.date;
+  const items = filterReports(rows, view, query, { status, project, funder, me }).sort((a, b) => priorityRank(a) - priorityRank(b) || (!due(a) !== !due(b) ? (due(a) ? -1 : 1) : (soonestFirst ? 1 : -1) * ((due(a) ?? "") + a.received_date).localeCompare((due(b) ?? "") + b.received_date)));
   const filtered = !!(query.trim() || status || project || funder);
   const clear = () => { setQuery(""); setStatus(""); setProject(""); setFunder(""); };
   const date = (d: string) => new Date(d + "T12:00:00").toLocaleDateString(language === "fr" ? "fr-CA" : "en-CA", { year: "numeric", month: "short", day: "numeric" });
@@ -56,7 +59,7 @@ export function Inbox({ mode = "inbox" }: { mode?: "inbox" | "reports" }) {
       {items.length === 0 ? <div className="panel inbox-empty"><p>{view === "mine" && !filtered ? t(`No reports are owned by ${me || "you"} yet. A report becomes yours when you run its first step as the preparer.`, `Aucun rapport n’appartient encore à ${me || "vous"}. Un rapport devient le vôtre quand vous lancez sa première étape comme préparateur.`) : t("No reports match this view.", "Aucun rapport ne correspond à cette vue.")}</p>{filtered ? <button type="button" className="secondary" onClick={clear}>{t("Clear filters", "Effacer les filtres")}</button> : view !== "all" && <Link className="secondary" href="/">{t("Show all reports", "Afficher tous les rapports")}</Link>}</div> :
         <div className="inbox-table-wrap" tabIndex={0} role="region" aria-label={t("Reports", "Rapports")}>
           <table className="inbox-table">
-            <thead><tr><th scope="col" className="col-priority">{t("Priority", "Priorité")}</th><th scope="col">{t("Report", "Rapport")}</th><th scope="col" aria-sort={newestFirst ? "descending" : "ascending"}><button type="button" className="sort-button" onClick={() => setNewestFirst(!newestFirst)}>{t("Due", "Échéance")} <span aria-hidden="true">{newestFirst ? "↓" : "↑"}</span></button></th><th scope="col">{t("Owner", "Responsable")}</th><th scope="col">{t("Status · next step", "État · prochaine étape")}</th></tr></thead>
+            <thead><tr><th scope="col" className="col-priority">{t("Priority", "Priorité")}</th><th scope="col">{t("Report", "Rapport")}</th><th scope="col" aria-sort={soonestFirst ? "ascending" : "descending"}><button type="button" className="sort-button" onClick={() => setSoonestFirst(!soonestFirst)}>{t("Due", "Échéance")} <span aria-hidden="true">{soonestFirst ? "↑" : "↓"}</span></button></th><th scope="col">{t("Owner", "Responsable")}</th><th scope="col">{t("Status · next step", "État · prochaine étape")}</th></tr></thead>
             <tbody>{items.map(r => { const s = getReportStatus(r); return <tr key={r.record_id} data-priority={r.priority?.level}><td className="col-priority"><PriorityBadge r={r} /></td>
               <th scope="row"><Link href={"/runs/" + r.record_id}>{r.title}</Link>{r.source_location.startsWith("Sample data") && <Tip text={t("A fictional project written in the style of a Water Care programme report, for demonstration only.", "Projet fictif rédigé dans le style d’un rapport de programme de Water Care, pour la démonstration.")}><span className="sample-chip">{t("Sample data", "Données d’exemple")}</span></Tip>}<small>{r.funder ?? "—"} · {t("Received", "Reçu")} {date(r.received_date)} · {r.record_id}</small></th>
               <td className="numeric">{(() => { const d = dueDate(r); return d

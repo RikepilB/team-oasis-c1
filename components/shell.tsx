@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import "./workspace-shell.css";
 import "./synapse-theme.css";
 import { BackBar, Tip } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { AssistantPanel } from "@/components/assistant-panel";
 import { SearchBar } from "@/components/search-bar";
 import { Guide } from "@/components/guide";
 import { PersonMenu } from "@/components/person-switcher";
@@ -37,6 +37,8 @@ export function savePreferences(change: Partial<Preferences>) {
 }
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 export function usePreferences() { return useSyncExternalStore(subscribe, readPreferences, () => DEFAULTS); }
+// The Assistant (with the French review panel) loads only when someone opens it, not with every page.
+const AssistantPanel = dynamic(() => import("@/components/assistant-panel").then(m => m.AssistantPanel), { ssr: false });
 // At phone width the sidebar is a drawer over the page, so its toggle reports the drawer, not the desktop rail.
 const PHONE = "(max-width: 860px)";
 const subscribePhone = (l: () => void) => { const m = matchMedia(PHONE); m.addEventListener("change", l); return () => m.removeEventListener("change", l); };

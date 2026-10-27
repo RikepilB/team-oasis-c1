@@ -5,7 +5,7 @@ import { useLanguage, useRemote, usePreferences, savePreferences, Message, type 
 import type { loadStandard } from "@/lib/demo/standard";
 import { PersonSelect, switchPerson, usePerson } from "@/components/person-switcher";
 import { PEOPLE, ROLE_LABEL, canDo, type Action, type Role } from "@/lib/demo/people";
-type Health = { application: string; storage: string; provider: string; identity: string; cache: string };
+type Health = { application: string; storage: string; provider: string; model: string | null; api_key: "set" | "missing" | null; identity: string; cache: string };
 const ACTIONS: [Action, string, string][] = [["prepare", "Prepare & edit", "Préparer et modifier"], ["review", "French review", "Révision française"], ["approve", "Approve & export", "Approuver et exporter"], ["settings", "Owns settings*", "Paramètres*"]];
 export function SettingsPage() {
   const { t } = useLanguage();
@@ -55,7 +55,7 @@ export function SettingsPage() {
       <h3>{t("Runtime", "Exécution")}</h3>
       <dl className="settings-list">
         {row(t("Storage", "Stockage"), health.data?.storage ?? "…", t("Where records, approvals and the audit log are kept.", "Où sont conservés rapports, approbations et journal."))}
-        {row(t("AI provider", "Fournisseur IA"), health.data?.provider ?? "…", t("Replay uses recorded responses; live needs a server key.", "Le rejeu utilise des réponses enregistrées; le mode direct exige une clé serveur."))}
+        {row(t("AI mode", "Mode IA"), !health.data ? "…" : health.data.provider === "live" ? t("Live", "Direct") + " · " + (health.data.model ?? "") + (health.data.api_key === "missing" ? " · " + t("no API key set", "aucune clé API") : "") : t("Replay (recorded answers)", "Rejeu (réponses enregistrées)"), t("Replay needs no key or internet. For live, set AI_MODE=live and ANTHROPIC_API_KEY in .env.local, then restart.", "Le rejeu ne demande ni clé ni internet. Pour le mode direct, ajoutez AI_MODE=live et ANTHROPIC_API_KEY dans .env.local, puis redémarrez."))}
         {row(t("Evidence cache", "Cache des données"), health.data?.cache ?? "…", t("Caches saved evidence views only; approvals always read storage.", "Met en cache les vues de données seulement; les approbations lisent toujours le stockage."))}
         {row(t("Identity", "Identité"), health.data?.identity ?? "…", t("Named demo people. No sign-in or tenant controls.", "Personnes fictives nommées. Aucune connexion ni contrôle de locataire."))}
       </dl>

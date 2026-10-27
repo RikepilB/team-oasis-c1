@@ -38,6 +38,8 @@ const clean: Case[] = [
   { id: "demo-school-jun", project: "School hygiene", period: "June 2026 visit round", period_end: "2026-06-15", reported: 80, full: 60, incl: 80, matches: "pct_incl_partly", firstFailure: { fdf: /not supported by its citations/, quebec: null }, uncertainWords: 0 },
   { id: "demo-spring-q4", project: "Spring protection", period: "Q4 FY2025-26", period_end: "2026-03-31", reported: 40, full: 40, incl: 60, matches: "pct_full", firstFailure: { fdf: null, quebec: /not supported by its citations/ }, uncertainWords: 2 },
   { id: "demo-river-may", project: "River programme", period: "May 2026 progress note", period_end: "2026-05-31", reported: 60, full: 40, incl: 60, matches: "pct_incl_partly", firstFailure: { fdf: /missing or unverified/, quebec: null }, uncertainWords: 0 },
+  // Fictional sample project in a WaterAid Canada style, labelled "Sample data". Its French draft carries three flagged words for the review demo.
+  { id: "sample-healthy-schools-q2", project: "Healthy Schools WASH (sample)", period: "Q2 FY2026-27", period_end: "2026-09-30", reported: 80, full: 60, incl: 80, matches: "pct_incl_partly", firstFailure: { fdf: null, quebec: null }, uncertainWords: 3 },
 ];
 const mismatch: Case = { id: "demo-spring-q1", project: "Spring protection", period: "Q1 FY2026-27", period_end: "2026-06-30", reported: 70, full: 60, incl: 80, matches: null, firstFailure: { fdf: null, quebec: null }, uncertainWords: 0 };
 const all = [...clean, mismatch];

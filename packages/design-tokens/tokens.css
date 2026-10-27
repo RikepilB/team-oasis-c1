@@ -1,29 +1,33 @@
-/* Synapse design tokens v3.2 · shared by the Astro site and Next workspace. See design.md. */
+/* Synapse design tokens v3.3 · shared by the Astro site and Next workspace. See design.md. */
 @font-face{font-family:"Source Sans 3";src:url("../../public/fonts/source-sans-3/SourceSans3VF-Upright.woff2") format("woff2");font-style:normal;font-weight:200 900;font-display:swap}
 :root{
-  /* Bone: surfaces. Pure white is never used. */
-  --bone-50:#FBF9F4;--bone-100:#F4F0E6;--bone-200:#E9E3D6;
-  /* Ink: text */
-  --ink-900:#1A262B;--ink-600:#3E4B50;
-  /* Lake: the only brand hue, used rarely */
-  --lake-900:#0B3B48;--lake-700:#0F4C5C;--lake-600:#1E5661;--lake-100:#D7E5E8;
+  /* Surfaces: bone white and a warm cream (from the WaterAid Canada stat cards). Pure white is never used. */
+  --bone-50:#FEFEFE;--cream:#F8F0E4;--bone-200:#F3F5F8;
+  /* Navy: text */
+  --navy-900:#151435;--navy-600:#44435D;
+  /* Blue: the only brand hue, used rarely. Darkened from the site's #006BD9 so text passes 7:1. */
+  --blue-900:#003E80;--blue-700:#004FA3;--blue-100:#D6E4F5;--blue-50:#EEF4FB;
   /* Status: three meanings only */
   --status-attention:#6B4507;--status-attention-fill:#F2EEE6;
   --status-urgent:#8A2A24;--status-urgent-fill:#F4EDE8;
   --status-done:#21543E;--status-done-fill:#EEEFE9;
-  /* Lines: ink at low opacity, so dividers sit quietly on bone and glass */
-  --hairline:rgba(26,38,43,.08);--line-soft:rgba(26,38,43,.12);--line-strong:rgba(26,38,43,.45);
+  /* Lines: navy at low opacity */
+  --control-border:#7D7C8E;--neu-raised-sm:3px 3px 8px rgba(21,20,53,.08),-3px -3px 8px rgba(255,255,255,.95);--hairline:rgba(21,20,53,.08);--line-soft:rgba(21,20,53,.12);--line-strong:rgba(21,20,53,.45);
+
+  /* v3.2 names, kept as aliases so existing styles follow the v3.3 palette */
+  --bone-100:var(--cream);--ink-900:var(--navy-900);--ink-600:var(--navy-600);
+  --lake-900:var(--blue-900);--lake-700:var(--blue-700);--lake-600:var(--blue-700);--lake-100:var(--blue-100);
 
   /* Spacing: a generous 4px-based scale with large steps for Apple-like breathing room */
   --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-7:32px;--space-8:40px;--space-9:48px;--space-10:64px;--space-11:80px;--space-12:96px;
   /* Shape */
   --radius-control:10px;--radius-card:16px;--radius-glass:20px;--radius-chip:999px;
   /* Depth: one soft shadow, one restrained raised (neumorphic) pair, one glass recipe */
-  --shadow-soft:0 1px 2px rgba(26,38,43,.04),0 8px 24px rgba(15,76,92,.06);
-  --shadow-lift:0 2px 6px rgba(26,38,43,.06),0 18px 48px rgba(15,76,92,.10);
-  --neu-raised:6px 6px 16px rgba(26,38,43,.06),-6px -6px 16px rgba(251,249,244,.9);
-  --neu-inset:inset 2px 2px 6px rgba(26,38,43,.07),inset -2px -2px 6px rgba(251,249,244,.9);
-  --glass-bg:rgba(251,249,244,.72);--glass-border:rgba(251,249,244,.6);--glass-blur:blur(18px) saturate(120%);
+  --shadow-soft:0 1px 2px rgba(21,20,53,.04),0 8px 24px rgba(21,20,53,.06);
+  --shadow-lift:0 2px 6px rgba(21,20,53,.06),0 18px 48px rgba(21,20,53,.10);
+  --neu-raised:5px 5px 14px rgba(21,20,53,.08),-5px -5px 14px rgba(255,255,255,.95);
+  --neu-inset:inset 2px 2px 5px rgba(21,20,53,.10),inset -2px -2px 5px rgba(255,255,255,.95);
+  --glass-bg:rgba(254,254,254,.62);--glass-border:rgba(254,254,254,.6);--glass-blur:blur(22px) saturate(150%);
   /* Motion */
   --ease:cubic-bezier(.2,.8,.2,1);--dur-fast:120ms;--dur:200ms;
 
@@ -31,7 +35,7 @@
   --font-body:"Inter";--font-stack:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
   --type-page-title:32px;--type-section:24px;--type-subsection:18px;--type-cta:16px;--type-body:16px;--type-small:14px;--type-caption:12px;
 
-  /* Legacy names used across the app, mapped onto v3.2 */
+  /* Legacy names used across the app, mapped onto v3.3 */
   --color-primary:var(--lake-700);--color-accent:var(--lake-700);--color-bg:var(--bone-200);--color-surface:var(--bone-50);--color-border:var(--line-soft);
   --color-text:var(--ink-900);--color-text-muted:var(--ink-600);--color-attention:var(--status-attention);--color-urgent:var(--status-urgent);--color-done:var(--status-done);
   --water:var(--ink-900);--accent:var(--lake-700);--chalk:var(--bone-100);--sand:var(--bone-100);--slate:var(--ink-600);--line:var(--line-soft);--surface:var(--bone-50);

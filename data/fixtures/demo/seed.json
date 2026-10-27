@@ -1,0 +1,18 @@
+{
+  "_note": "Sample work replayed once when a fresh demo starts, so 'Needs action' has reports in it. All fictional.",
+  "steps": [
+    { "id": "sample-healthy-schools-q2", "action": "extract", "actor": "Daniel" },
+    { "id": "sample-healthy-schools-q2", "action": "clean", "actor": "Daniel" },
+    { "id": "sample-healthy-schools-q2", "action": "validate", "actor": "Daniel" },
+    { "id": "sample-healthy-schools-q2", "action": "template", "actor": "Daniel", "funder_id": "fdf" },
+    { "id": "fixture-q1", "action": "extract", "actor": "Daniel" },
+    { "id": "fixture-q1", "action": "clean", "actor": "Daniel" },
+    { "id": "fixture-q1", "action": "validate", "actor": "Daniel" },
+    { "id": "fixture-q1", "action": "template", "actor": "Daniel", "funder_id": "fdf" },
+    { "id": "demo-school-jun", "action": "extract", "actor": "Daniel" },
+    { "id": "demo-school-jun", "action": "clean", "actor": "Daniel" },
+    { "id": "demo-school-jun", "action": "validate", "actor": "Daniel" },
+    { "id": "demo-school-jun", "action": "template", "actor": "Daniel", "funder_id": "fdf" },
+    { "id": "demo-school-jun", "action": "approve", "actor": "Director, International Programmes", "funder_id": "fdf" }
+  ]
+}

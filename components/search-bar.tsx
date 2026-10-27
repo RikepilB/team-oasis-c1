@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/components/shell";
@@ -25,7 +26,7 @@ export function SearchBar({ reports }: { reports: Catalog }) {
   const go = (r?: Result) => { if (!r) return; router.push(r.href); setQuery(""); setOpen(false); (document.activeElement as HTMLElement | null)?.blur(); };
   return <div className="synapse-search" role="search">
     <label className="sr-only" htmlFor="synapse-search">{t("Search reports and pages", "Rechercher rapports et pages")}</label>
-    <span className="search-icon" aria-hidden="true">⌕</span>
+    <span className="search-icon" aria-hidden="true"><Icon name="search" size={18} className="tool-icon" /></span>
     <input ref={input} id="synapse-search" type="search" autoComplete="off" role="combobox" aria-expanded={open && results.length > 0} aria-controls="synapse-search-results" aria-activedescendant={open && results[active] ? "search-result-" + active : undefined}
       placeholder={t("Search reports, projects, funders…", "Rechercher rapports, projets, bailleurs…")} value={query}
       onChange={e => { setQuery(e.target.value); setOpen(true); setActive(0); }} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)}

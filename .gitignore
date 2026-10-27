@@ -8,6 +8,7 @@ next-env.d.ts
 
 # secrets: never tracked (variables are documented in README → "Environment")
 .env*
+!.env.example
 
 # challenge pack data (fictional, "for hackathon use only"): download from the team Drive, never commit
 data/pack/*

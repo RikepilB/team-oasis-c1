@@ -24,7 +24,7 @@ These are the assumptions the design and the demo rest on. Anything here that tu
 ### The organisation and the data
 
 8. **Pack data only.** Figures and rules come from the C1 challenge pack (for example funder deadlines from the Annual Operating Calendar, 1.4, and cost bands from 2.3). The Kijana water-point data stands in for real programme data in the demo only.
-9. **One sample project in a WaterAid Canada style.** "Healthy Schools WASH (sample)" is a fictional project written in the style of a WaterAid Canada programme report, to show a realistic case. It is labelled "Sample data" in the app. It is not WaterAid's data and Synapse is not a WaterAid product.
+9. **One sample project in a Water Care style.** "Healthy Schools WASH (sample)" is a fictional project written in the style of a Water Care programme report, to show a realistic case. It is labelled "Sample data" in the app. It is not WaterAid's data and Synapse is not a WaterAid product.
 10. **Two ways of counting, not wrongdoing.** "Fully working" and "including partly working" water points give different percentages (for example 85% vs 70%). Synapse shows both and asks which one a report means; a mismatch is a question for the programme team, not an accusation.
 11. **Reports arrive by email (simulated).** In the real system, programme reports would be CC'd to a Synapse inbox address. In the demo they are files in `data/fixtures/demo/inbox/`.
 12. **Roles stand in for sign-in.** "Acting as" switches between fictional people (preparer, bilingual reviewer, approver, administrator). Real use needs Water Care's single sign-on and group permissions.

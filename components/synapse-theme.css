@@ -645,3 +645,15 @@ a.template-link:hover{border-color:var(--navy-900)}
 .standard-link-list a{font-weight:500}
 @media (max-width:1100px){.wizard-steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:860px){.detail-grid,.definition-cards,.tier-options{grid-template-columns:1fr}.wizard-steps{grid-template-columns:1fr 1fr}.skill-preview{position:static}.map-rows li{grid-template-columns:1fr;gap:4px}.map-arrow{transform:rotate(90deg);justify-self:start;padding-left:var(--space-4)}.skill-meta{grid-template-columns:1fr}}
+
+/* Phone top bar: tighter gaps, a compact language menu and icon-only buttons, with the search box taking
+   whatever room is left, so the bar fits a 320–430px screen and its right-aligned tips stay on screen. */
+@media (max-width:480px){
+  .synapse-topbar{gap:var(--space-2);padding-right:var(--space-2)}
+  .synapse-topbar-start{padding:0 0 0 var(--space-2);gap:0}
+  .synapse-search{min-width:0}
+  .synapse-search input{padding-right:10px}
+  .synapse-topbar-tools{gap:4px;flex:none}
+  .synapse-topbar-tools select{padding:8px 26px 8px 8px;background-position:right 6px center}
+  .guide-toggle,.assistant-toggle{padding:8px 10px}
+}

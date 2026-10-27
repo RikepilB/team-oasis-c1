@@ -13,7 +13,7 @@ body{
   background-attachment:fixed;
 }
 h1,h2,h3,h4{color:var(--ink-900);font-family:var(--font-stack);letter-spacing:-.015em}
-h1{font-size:var(--type-page-title);line-height:48px;font-weight:700;letter-spacing:-.025em}
+h1,.page-heading h1,.home-intro h1{font-size:var(--type-page-title);line-height:48px;font-weight:700;letter-spacing:-.025em}
 h2{font-size:var(--type-section);line-height:36px;font-weight:700;letter-spacing:-.02em}
 h3{font-size:var(--type-subsection);line-height:26px;font-weight:600}
 p{line-height:1.6}
@@ -52,9 +52,9 @@ button[aria-disabled=true],button:disabled,.primary[aria-disabled=true],.seconda
 .tip-wrap:hover>.tip,.tip-wrap:is(:focus-visible,:has(:focus-visible))>.tip,.tip-wrap.tip-flash>.tip{opacity:1;visibility:visible;transform:translate(-50%,0)}
 .tip-wrap.tip-flash>button{animation:nudge 300ms var(--ease)}
 @keyframes nudge{20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(1px)}}
-.actionbar-buttons .tip-wrap:last-child>.tip,.sidebar-footer .tip-wrap>.tip{left:auto;right:0;transform:translateY(4px)}
-.actionbar-buttons .tip-wrap:last-child>.tip::after,.sidebar-footer .tip-wrap>.tip::after{left:auto;right:18px}
-.actionbar-buttons .tip-wrap:last-child:hover>.tip,.actionbar-buttons .tip-wrap:last-child:is(:focus-visible,:has(:focus-visible))>.tip,.actionbar-buttons .tip-wrap.tip-flash:last-child>.tip,.sidebar-footer .tip-wrap:hover>.tip,.sidebar-footer .tip-wrap:is(:focus-visible,:has(:focus-visible))>.tip{transform:translateY(0)}
+.actionbar-buttons .tip-wrap:last-child>.tip,.sidebar-footer .tip-wrap>.tip,.review-actions .tip-wrap:last-child>.tip{left:auto;right:0;transform:translateY(4px)}
+.actionbar-buttons .tip-wrap:last-child>.tip::after,.sidebar-footer .tip-wrap>.tip::after,.review-actions .tip-wrap:last-child>.tip::after{left:auto;right:18px}
+.review-actions .tip-wrap:last-child:hover>.tip,.review-actions .tip-wrap:last-child:is(:focus-visible,:has(:focus-visible))>.tip,.review-actions .tip-wrap.tip-flash:last-child>.tip,.actionbar-buttons .tip-wrap:last-child:hover>.tip,.actionbar-buttons .tip-wrap:last-child:is(:focus-visible,:has(:focus-visible))>.tip,.actionbar-buttons .tip-wrap.tip-flash:last-child>.tip,.sidebar-footer .tip-wrap:hover>.tip,.sidebar-footer .tip-wrap:is(:focus-visible,:has(:focus-visible))>.tip{transform:translateY(0)}
 
 /* ---------- Glass chrome (one layer only) ---------- */
 .synapse-topbar,.synapse-sidebar,.synapse-assistant,.report-actionbar,.export-dialog{background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
@@ -134,7 +134,9 @@ a[aria-current=page] .nav-icon{color:var(--ink-900)}
   .sidebar-collapsed .synapse-body{grid-template-columns:var(--rail-w) minmax(0,1fr)}
   .sidebar-collapsed.has-assistant .synapse-body{grid-template-columns:var(--rail-w) minmax(0,1fr) var(--assistant-w)}
   .sidebar-collapsed .synapse-sidebar{display:flex;padding:var(--space-4) var(--space-2);overflow:visible}
-  .sidebar-collapsed .synapse-sidebar .nav-text,.sidebar-collapsed .nav-chevron,.sidebar-collapsed .nav-sub,.sidebar-collapsed .nav-recent,.sidebar-collapsed .sidebar-note,.sidebar-collapsed .person-text,.sidebar-collapsed .person-caret{display:none}
+  .sidebar-collapsed .nav-chevron,.sidebar-collapsed .nav-sub,.sidebar-collapsed .nav-recent,.sidebar-collapsed .sidebar-note,.sidebar-collapsed .person-caret{display:none}
+  /* Hidden visually but still read out, so rail icons keep their names for screen readers */
+  .sidebar-collapsed .synapse-sidebar .nav-text,.sidebar-collapsed .person-text{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   .sidebar-collapsed .synapse-sidebar nav a,.sidebar-collapsed .nav-group summary{justify-content:center;padding:6px}
   .sidebar-collapsed .sidebar-footer{flex-direction:column}
   .sidebar-collapsed .synapse-sidebar [data-label]:hover::after,.sidebar-collapsed .synapse-sidebar [data-label]:focus-visible::after{content:attr(data-label);position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);background:var(--ink-900);color:var(--bone-50);font-size:13px;line-height:18px;padding:6px 10px;border-radius:8px;white-space:nowrap;z-index:70;box-shadow:var(--shadow-lift)}
@@ -302,7 +304,7 @@ tbody tr:hover td{background:rgba(248,240,228,.6)}
 .nowrap{white-space:nowrap}
 .inbox-table .sort-button{white-space:nowrap}
 h1{text-wrap:balance}
-@media (max-width:860px){h1,.run-heading h1{font-size:32px;line-height:40px}h2{font-size:24px;line-height:32px}.count-card>strong{font-size:32px;line-height:40px}}
+@media (max-width:860px){h1,.run-heading h1,.page-heading h1,.home-intro h1{font-size:32px;line-height:40px}h2{font-size:24px;line-height:32px}.count-card>strong{font-size:32px;line-height:40px}}
 
 /* v3.4: more room. Pages use the full width beside a slimmer sidebar; recent reports fold away. */
 .synapse-shell{--sidebar-w:224px}
@@ -353,7 +355,7 @@ html[data-text-size="130"]{zoom:1.3}
 @container (max-width:460px){.inbox-filters{grid-template-columns:1fr}}
 
 /* v3.6: type scale. Page titles 32px, sections 24px, everything you read 16px */
-h1,.run-heading h1{font-size:32px;line-height:40px}
+h1,.run-heading h1,.page-heading h1,.home-intro h1{font-size:32px;line-height:40px}
 h2{font-size:24px;line-height:32px}
 h3{font-size:18px;line-height:26px}
 .report-panel,.report-panel p,.report-panel li,.version-row,.issue-section p{font-size:16px;line-height:24px}

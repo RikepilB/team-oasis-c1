@@ -105,7 +105,8 @@
   .synapse-body,.has-assistant .synapse-body,.sidebar-collapsed.has-assistant .synapse-body{grid-template-columns:minmax(0,1fr)}
   .synapse-topbar-start{width:auto;padding:0 4px 0 8px}
   .synapse-brand strong{display:none}
-  .synapse-search kbd,.assistant-toggle-label{display:none}
+  .synapse-search kbd{display:none}
+  .assistant-toggle-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   .sidebar-collapsed .synapse-sidebar.is-open,.synapse-sidebar.is-open{display:flex}
   .assistant-toggle{padding:6px 10px}
   .synapse-sidebar{display:none;position:fixed;top:var(--topbar-h);left:0;bottom:0;height:auto;width:min(300px,85vw);z-index:26}

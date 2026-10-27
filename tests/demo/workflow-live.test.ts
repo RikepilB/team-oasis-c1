@@ -18,7 +18,7 @@ vi.mock("@/lib/harness/providers/live", () => ({
     return { ok: true, data: replay.templates[args.key.endsWith("quebec") ? "quebec" : "fdf"].attempts[0], model: "claude-haiku-5-5" };
   }),
 }));
-import { getLog, getRecord, runAction } from "@/lib/demo/workflow";
+import { getExport, getLog, getRecord, runAction } from "@/lib/demo/workflow";
 
 const ENV = ["SYNAPSE_DATA_DIR", "SYNAPSE_RUNTIME_DIR", "AI_MODE", "ANTHROPIC_API_KEY"] as const;
 const prior = Object.fromEntries(ENV.map(k => [k, process.env[k]]));
@@ -60,4 +60,17 @@ test("live mode builds the template prompt from facts and computed metrics", asy
   expect(call.input).toContain("F-01 | functionality_reported | 80 %");
   expect(call.input).toMatch(/pct_incl_partly \| 80/);
   expect((await getRecord(id)).templates.quebec?.fields.every(f => f.check === "green")).toBe(true);
+});
+
+test("a live draft's export says a live AI model drafted it, even after switching back to replay", async () => {
+  for (const a of ["extract", "clean", "validate"]) await runAction(id, a, who);
+  const r = await runAction(id, "template", { ...who, funder_id: "fdf" });
+  expect(r.templates.fdf?.ai_mode).toBe("live");
+  const input = { actor: "Morgan", funder_id: "fdf" as const, expected_revision: r.templates.fdf!.revision };
+  await runAction(id, "approve", input);
+  process.env.AI_MODE = "replay";
+  await runAction(id, "export", input);
+  const content = (await getExport(id, "fdf", input.expected_revision)).content;
+  expect(content).toContain("Drafted by a live AI model, then checked and approved by a person.");
+  expect(content).not.toContain("Replay demonstration");
 });

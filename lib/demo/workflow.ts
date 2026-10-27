@@ -238,7 +238,7 @@ function exportContent(c: Context, r: DemoRecord, t: DemoTemplate) {
   const fieldText = t.fields.map(f => "## " + f.label + "\n\n" + f.value + "\n\nSource: " + (f.source?.id || f.cites.join(", ") || "Qualitative statement")).join("\n\n");
   const provenance = sources(c, r).map(s => "- " + s.id + ": " + s.value + (s.unit || "")).join("\n");
   const constants = c.dataset.constants.map(s => "- " + s.id + ": " + s.source + "; " + s.period + "; " + s.definition).join("\n");
-  return "# " + def.label + " — " + r.period + "\n\nFictional data / Données fictives. Replay demonstration.\n\n" + fieldText + "\n\n## Provenance\n\n" + r.source_location + "\nSnapshot: " + r.snapshot_id + "; cutoff: " + r.period_end + "; revision: " + t.revision + "\n\n" + provenance + "\n\n" + constants + "\n\n---\n\n" + disclosure + "\n";
+  return "# " + def.label + " — " + r.period + "\n\nFictional data / Données fictives. " + (t.ai_mode === "live" ? "Drafted by a live AI model, then checked and approved by a person." : "Replay demonstration.") + "\n\n" + fieldText + "\n\n## Provenance\n\n" + r.source_location + "\nSnapshot: " + r.snapshot_id + "; cutoff: " + r.period_end + "; revision: " + t.revision + "\n\n" + provenance + "\n\n" + constants + "\n\n---\n\n" + disclosure + "\n";
 }
 const exportFile = (c: Context, id: string, funder: string, revision: number) => path.join(c.runtime, "exports", safeId(id) + "-" + safeId(funder) + "-r" + revision + ".md");
 export async function getExport(id: string, funder_id: string, revision: number) {
@@ -320,7 +320,7 @@ export async function runAction(id: string, action: string, input: ActionInput =
         return data.attempts;
       };
       const out = await replay(c, r, "fill_template", attempts, FillSchema, d => d.fields.flatMap(f => checkNarrative(f.value, f.cites, src).problems), actor, fillPrompt(def, r, src), r.record_id + "-" + def.id);
-      const t: DemoTemplate = { standard_version: standardVersion(), funder_id: def.id, language: def.language, preparer: r.preparer, revision: (existing?.revision || 0) + 1, fields: [...fields, ...out.fields.map(f => ({ ...f, label: def.narrative.find(n => n.key === f.key)?.label || f.key, kind: "narrative" as const, source: null, check: "red" as const, check_reason: null }))], checks: [], review: null, approval: null, disclosure: null };
+      const t: DemoTemplate = { standard_version: standardVersion(), funder_id: def.id, language: def.language, preparer: r.preparer, revision: (existing?.revision || 0) + 1, fields: [...fields, ...out.fields.map(f => ({ ...f, label: def.narrative.find(n => n.key === f.key)?.label || f.key, kind: "narrative" as const, source: null, check: "red" as const, check_reason: null }))], checks: [], review: null, approval: null, disclosure: null, ai_mode: aiMode() };
       r.templates[def.id] = verify(c, r, t);
     }
     else if (["edit", "review", "approve", "export"].includes(action)) {

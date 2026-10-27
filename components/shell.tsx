@@ -11,7 +11,7 @@ import { SearchBar } from "@/components/search-bar";
 import { Guide } from "@/components/guide";
 import { PersonMenu } from "@/components/person-switcher";
 import type { Catalog } from "@/lib/demo/catalog";
-import { priorityRank, getReportStatus } from "@/lib/demo/presentation";
+import { dueDate, priorityRank, getReportStatus } from "@/lib/demo/presentation";
 
 // Per-browser user preferences. Demo only: nothing here is an account or a permission.
 // personId picks a demo person (lib/demo/people.ts); "custom" keeps a typed name and role.
@@ -37,6 +37,10 @@ export function savePreferences(change: Partial<Preferences>) {
 }
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 export function usePreferences() { return useSyncExternalStore(subscribe, readPreferences, () => DEFAULTS); }
+// At phone width the sidebar is a drawer over the page, so its toggle reports the drawer, not the desktop rail.
+const PHONE = "(max-width: 860px)";
+const subscribePhone = (l: () => void) => { const m = matchMedia(PHONE); m.addEventListener("change", l); return () => m.removeEventListener("change", l); };
+function usePhone() { return useSyncExternalStore(subscribePhone, () => matchMedia(PHONE).matches, () => false); }
 // The Assistant starts closed so pages get the full width; it opens on request, or by itself for French review.
 export function useAssistant() { const prefs = usePreferences(); const open = prefs.assistantOpen ?? false; return { open, setOpen: (v: boolean) => savePreferences({ assistantOpen: v }) }; }
 export function useLanguage() { const { language } = usePreferences(); return { language, setLanguage: (l: "en" | "fr") => savePreferences({ language: l }), t: (en: string, fr: string) => language === "fr" ? fr : en }; }
@@ -61,6 +65,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const prefs = usePreferences();
   const assistant = useAssistant();
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const phone = usePhone();
   const [guideOpen, setGuideOpen] = useState(false);
   const pathname = usePathname();
   const reports = useRemote<Catalog>("/api/reports");
@@ -72,7 +77,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const item = ([href, en, fr]: [string, string, string]) => <Link key={href} href={href} onClick={close} aria-current={pathname === href ? "page" : undefined}>{t(en, fr)}</Link>;
   // Main sections: icon + label. Collapsed, the label becomes a tooltip.
   const mainItem = ([href, en, fr, icon]: [string, string, string, string]) => <Link key={href} href={href} onClick={close} className="nav-main" data-label={t(en, fr)} aria-current={pathname === href || (href !== "/" && pathname.startsWith(href + "/")) ? "page" : undefined}><Icon name={icon} /><span className="nav-text">{t(en, fr)}</span></Link>;
-  const recent = [...(reports.data ?? [])].sort((a, b) => priorityRank(a) - priorityRank(b)).slice(0, 4);
+  // Most urgent first, then the earliest due date, so a sooner deadline is never cut by the limit of four.
+  const recent = [...(reports.data ?? [])].sort((a, b) => priorityRank(a) - priorityRank(b) || (dueDate(a)?.date ?? "9999").localeCompare(dueDate(b)?.date ?? "9999")).slice(0, 4);
   // Focus mode: on a report with the Assistant open, the sidebar shrinks to its icon rail so the report and
   // the side-by-side French pages get the room. It isn't saved; closing the Assistant brings the sidebar back.
   // Clicking a folded group in the icon rail opens the sidebar too, so its menu is reachable in one click.
@@ -92,7 +98,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <a className="skip-link" href="#main">{t("Skip to content", "Aller au contenu")}</a>
     <header className="synapse-topbar">
       <div className="synapse-topbar-start">
-        <button type="button" className="sidebar-toggle" aria-controls="synapse-sidebar" aria-expanded={!collapsed || navigationOpen} onClick={toggleSidebar} title={t("Show or hide the sidebar", "Afficher ou masquer le menu")}><Icon name="sidebar" /><span className="sr-only">{t("Toggle the sidebar", "Afficher ou masquer le menu")}</span></button>
+        <button type="button" className="sidebar-toggle" aria-controls="synapse-sidebar" aria-expanded={phone ? navigationOpen : !collapsed} onClick={toggleSidebar} title={t("Show or hide the sidebar", "Afficher ou masquer le menu")}><Icon name="sidebar" /><span className="sr-only">{t("Toggle the sidebar", "Afficher ou masquer le menu")}</span></button>
         <Link href="/" className="synapse-brand" onClick={close} aria-label={t("Synapse home", "Accueil Synapse")}><svg viewBox="0 0 40 28" aria-hidden="true"><circle cx="7" cy="19" r="5" /><path d="M8 19C18 19 16 8 30 8" fill="none" stroke="currentColor" strokeWidth="3" /><circle cx="31" cy="8" r="5" /></svg><strong>Synapse</strong></Link>
       </div>
       <SearchBar reports={reports.data ?? []} />

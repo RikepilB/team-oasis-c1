@@ -138,6 +138,12 @@ The initial PostgreSQL adapter stores validated JSON documents transactionally. 
 7. Switch to the **Director, International Programmes**: **Approve content**, then **Confirm export…** and choose PDF or Word.
 8. Open **Activity** to see every attempt, decision, approval and export, each with a name.
 
+### Skills, templates and profiles
+
+- **Library → Skills** lists every registered skill with its owner, approver, risk tier, data classes and the workflow steps that use it. Each one opens on its own page and downloads as its exact `SKILL.md`; **Download register (.md)** exports the whole list.
+- **+ New skill** is a five-step wizard (basics, ownership and risk, where it runs, instruction, review). It checks the draft as you go, saves it in this browser and downloads a `SKILL.md`. A reviewer places it at `standard/skills/<name>/SKILL.md`; it only runs once a developer names it in a workflow step.
+- On **Workflow & rules** and **Templates**, every template and profile opens a visual page: where each number comes from, the sections a person approves, the export disclosure, and how a profile writes numbers and dates.
+
 Content/evidence changes invalidate dependent approvals. Missing observations stay in the full-register denominator and block approval. Empty datasets display unavailable percentages. Export checks the exact approved revision; concurrent duplicate clicks create one immutable export.
 
 ## Performance and data access

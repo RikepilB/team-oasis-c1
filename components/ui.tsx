@@ -59,6 +59,8 @@ const PARENTS: [RegExp, string, string, string][] = [
   [/^\/runs\//, "/", "Inbox", "Boîte de réception"],
   [/^\/evidence\//, "/sources", "Files & sources", "Fichiers et sources"],
   [/^\/templates\/.+/, "/templates", "Templates", "Gabarits"],
+  [/^\/skills\/.+/, "/skills", "Skills", "Compétences"],
+  [/^\/profiles\//, "/standard#templates", "Workflow & rules", "Parcours et règles"],
   [/^\/standard/, "/sources", "Files & sources", "Fichiers et sources"],
   [/^\/log/, "/sources", "Files & sources", "Fichiers et sources"],
 ];

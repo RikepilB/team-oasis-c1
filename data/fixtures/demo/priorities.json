@@ -1,0 +1,9 @@
+{
+  "_note": "Sample priorities for the demo. Fictional: who set each priority, when, and why.",
+  "priorities": {
+    "sample-healthy-schools-q2": { "level": "P0", "set_by": "Director, International Programmes", "set_at": "2026-10-20", "reason": "FDF Q2 report is due 31 Oct. Finish this one first." },
+    "fixture-q1": { "level": "P1", "set_by": "Director, International Programmes", "set_at": "2026-10-20", "reason": "Q1 figures feed the Q2 report. Approve this week." },
+    "demo-school-jun": { "level": "P1", "set_by": "Daniel", "set_at": "2026-10-21", "reason": "Approved; the export is waiting for the Director." },
+    "demo-spring-q1": { "level": "P2", "set_by": "Daniel", "set_at": "2026-10-21", "reason": "The reported 70% matches neither definition; check with the programme before preparing." }
+  }
+}

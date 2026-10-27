@@ -53,7 +53,7 @@ export function AssistantPanel({ reports, onClose }: { reports: Catalog; onClose
       <textarea id="assistant-question" rows={2} maxLength={500} value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void ask(question); } }} placeholder={t("Ask about this report…", "Posez une question sur ce rapport…")} disabled={!recordId} />
       <GuardedButton type="submit" className="primary" busy={busy} reason={!recordId ? t("Open a report first, or pick one in the Report list above.", "Ouvrez d’abord un rapport, ou choisissez-en un dans la liste.") : question.trim().length < 2 ? t("Type a question first.", "Écrivez d’abord une question.") : null}>{busy ? "…" : t("Ask", "Demander")}</GuardedButton>
     </form>
-    <p className="assistant-note">{t("Verified lookup over this report’s facts and checks. Replay mode: no live model call.", "Recherche vérifiée dans les faits et contrôles du rapport. Mode rejeu : aucun modèle appelé.")}</p>
+    <p className="assistant-note">{t("Answers come only from this report’s facts and checks. No AI model writes them, so nothing is made up.", "Les réponses viennent uniquement des faits et contrôles du rapport. Aucun modèle d’IA ne les rédige, donc rien n’est inventé.")}</p>
     </>}
   </div>;
 }

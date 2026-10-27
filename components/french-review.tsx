@@ -43,7 +43,7 @@ export function FrenchDocuments({ record }: { record: DemoRecord }) {
       <span className={"doc-chip " + (fr.check === "green" ? "ok" : "block")}>{fr.check === "green" ? "✓" : "✕"} {t("Numbers preserved", "Chiffres conservés")}</span>
       <span className={"doc-chip " + (open ? "open" : "ok")}>{fr.items.length - open} / {fr.items.length} {t("flagged items decided", "éléments signalés décidés")}</span>
       {!assistant.open && open > 0 && <button type="button" className="secondary" onClick={() => assistant.setOpen(true)}>{t("Open review", "Ouvrir la révision")} →</button>}
-      <span className="doc-legend"><mark data-state="open">{t("to decide", "à décider")}</mark><mark data-state="approved">{t("approved", "approuvé")}</mark><mark data-state="declined">{t("fixed by reviewer", "corrigé")}</mark></span>
+      <span className="doc-legend" role="note"><span className="doc-legend-label">{t("Highlighted words:", "Mots surlignés :")}</span><mark data-state="open">{t("Needs a decision", "À décider")}</mark><mark data-state="approved">✓ {t("Approved", "Approuvé")}</mark><mark data-state="declined">✎ {t("Changed by reviewer", "Modifié par la révision")}</mark></span>
     </div>
     <div className="doc-pages">
       <article className="doc-page" lang="en"><header><span>{t("Original · English", "Original · anglais")}</span><small>{record.source_file}</small></header><h4>{record.period}</h4><p>{record.original_text}</p></article>
@@ -66,7 +66,7 @@ export function FrenchReviewPanel({ id }: { id: string }) {
   if (!record) return <Message error={error} />;
   const frenchHref = "/runs/" + encodeURIComponent(id) + "?tab=french&funder=quebec";
   const fr = record.french;
-  if (!fr) return <div className="review-panel"><div className="review-empty"><p>{t("There is no French draft yet. The preparer creates it on the French version page.", "Aucun brouillon français pour l’instant. Le préparateur le crée sur la page Version française.")}</p><button type="button" className="secondary" onClick={() => router.push(frenchHref)}>{t("Go to the French version", "Aller à la version française")} →</button></div></div>;
+  if (!fr) return <div className="review-panel"><div className="review-empty"><p>{t("There is no French draft yet. The preparer creates it on the French tab.", "Aucun brouillon français pour l’instant. Le préparateur le crée sur l’onglet Français.")}</p><button type="button" className="secondary" onClick={() => router.push(frenchHref)}>{t("Go to the French version", "Aller à la version française")} →</button></div></div>;
   const pending = fr.items.filter(i => !i.decision);
   const decided = fr.items.filter(i => i.decision);
   const can = canDo(person.role, "review");

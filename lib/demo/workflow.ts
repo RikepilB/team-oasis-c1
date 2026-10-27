@@ -7,6 +7,11 @@ import { latestStatus, countFunctionality, priorityGroups, pointsBehind } from "
 import { getSkill, isRegistered } from "@/lib/harness/skills";
 import { guardPersonalData, PERSONAL_DATA_PATTERNS } from "@/lib/harness/guard";
 import { ExtractSchema, FrenchSchema, FillSchema } from "@/lib/harness/jobs";
+import { liveProvider, activeModel } from "@/lib/harness/providers/live";
+
+// AI_MODE=live sends each drafting job to the model (needs ANTHROPIC_API_KEY); anything else replays the
+// recorded responses in data/fixtures/demo/replay, so the demo never needs a key or a network.
+export const aiMode = (): "live" | "replay" => (process.env.AI_MODE ?? "replay").trim().toLowerCase() === "live" ? "live" : "replay";
 import { getTemplate, loadStandard } from "@/lib/demo/standard";
 import { checkFact, checkFrench, checkNarrative, checkNumericField, type Citable } from "@/lib/demo/verify";
 import { buildFrenchItems, decideFrenchItem } from "@/lib/demo/french-review";
@@ -119,6 +124,25 @@ function sources(c: Context, r: DemoRecord): Citable[] {
   ...r.metrics.map(m => ({ id: m.metric_id, value: m.value, unit: m.metric_id.startsWith("pct") ? "%" : null, valid: true })),
   ...c.dataset.constants.map(s => ({ id: s.id, value: s.value, unit: s.unit, valid: !!s.source.trim() && checkFact({ ...s }, s.quote).check === "green" }))];
 }
+// What the fill_template skill reads in live mode: funder, language, the narrative fields, then every citable number.
+function fillPrompt(def: ReturnType<typeof getTemplate>, r: DemoRecord, src: Citable[]): string {
+  return [
+    `Funder: ${def.id}`,
+    `Write in: ${def.language === "fr" ? "French" : "English"}`,
+    "",
+    "Fields to write (key: label):",
+    ...def.narrative.map(n => `- ${n.key}: ${n.label}`),
+    "",
+    "Facts (cite by fact_id):",
+    ...(r.facts.length ? r.facts.map(f => `- ${f.fact_id} | ${f.label} | ${f.value}${f.unit ? " " + f.unit : ""} | ${f.period ?? "no period"} | "${f.quote}"`) : ["(none)"]),
+    "",
+    "Metrics computed by code (cite by metric_id):",
+    ...(r.metrics.length ? r.metrics.map(m => `- ${m.metric_id} | ${m.value} | cutoff ${r.period_end}`) : ["(none)"]),
+    "",
+    "Reference constants (cite by id):",
+    ...src.filter(s => !r.facts.some(f => f.fact_id === s.id) && !r.metrics.some(m => m.metric_id === s.id)).map(s => `- ${s.id} | ${s.value}${s.unit ?? ""}`),
+  ].join("\n");
+}
 function standardVersion() { return hash(JSON.stringify(loadStandard())); }
 function verify(c: Context, r: DemoRecord, t: DemoTemplate): DemoTemplate {
   const def = getTemplate(t.funder_id);
@@ -170,7 +194,7 @@ function guard(c: Context, r: DemoRecord, input: string) {
     throw new DemoError("guard_blocked", "Personal data found (" + kinds.join(", ") + "). Remove it before continuing.");
   }
 }
-async function replay<T>(c: Context, r: DemoRecord, job: string, payload: unknown, schema: z.ZodType<T>, validate: (output: T) => string[], actor: string): Promise<T> {
+async function replay<T>(c: Context, r: DemoRecord, job: "extract_facts" | "draft_french" | "fill_template", payload: () => unknown, schema: z.ZodType<T>, validate: (output: T) => string[], actor: string, liveInput: string, key = r.record_id): Promise<T> {
   const skill = getSkill(job);
   if (!skill || skill.kind !== "ai" || !isRegistered(skill) || !skill.instruction)
     throw new DemoError("unregistered_skill", "This drafting job is not completely registered.");
@@ -178,11 +202,23 @@ async function replay<T>(c: Context, r: DemoRecord, job: string, payload: unknow
   let output: T | undefined;
   for (const attempt of [1, 2]) {
     guard(c, r, r.original_text + "\n" + JSON.stringify(r.facts) + "\n" + failures.join("; "));
-    const candidate = Array.isArray(payload) ? payload[Math.min(attempt - 1, payload.length - 1)] : payload;
+    let candidate: unknown;
+    if (aiMode() === "live") {
+      // The retry tells the model which checks its first answer failed, as the harness does.
+      const text = attempt === 1 || !failures.length ? liveInput : liveInput + "\n\nYour previous answer failed these checks. Fix them:\n- " + failures.join("\n- ");
+      guard(c, r, text);
+      const res = await liveProvider({ job, key, attempt: attempt as 1 | 2, system: skill.instruction, input: text, schema });
+      audit(c, actor, "ai_call", r.record_id, { job, provider: "live", attempt, skill_version: skill.version, model: res.ok ? res.model ?? activeModel() : activeModel(), ok: res.ok, ...(res.ok ? {} : { error: res.error.kind }) });
+      if (!res.ok) throw new DemoError("ai_" + res.error.kind, res.error.message, res.error.kind === "no_key" ? 400 : 502);
+      candidate = res.data;
+    } else {
+      const recordedPayload = payload();
+      candidate = Array.isArray(recordedPayload) ? recordedPayload[Math.min(attempt - 1, recordedPayload.length - 1)] : recordedPayload;
+      audit(c, actor, "replay", r.record_id, { job, provider: "replay", attempt, skill_version: skill.version, simulated: true });
+    }
     const parsed = schema.safeParse(candidate);
-    audit(c, actor, "replay", r.record_id, { job, provider: "replay", attempt, skill_version: skill.version, simulated: true });
     if (!parsed.success) {
-      failures = ["Recorded response has an invalid schema."];
+      failures = [aiMode() === "live" ? "The answer did not match the expected JSON shape." : "Recorded response has an invalid schema."];
       continue;
     }
     output = parsed.data;
@@ -193,7 +229,7 @@ async function replay<T>(c: Context, r: DemoRecord, job: string, payload: unknow
   }
   if (output !== undefined)
     return output;
-  throw new DemoError("replay_invalid", "Recorded response failed validation after two attempts.");
+  throw new DemoError("replay_invalid", aiMode() === "live" ? "The AI's answer failed its checks twice. Try again, or switch AI_MODE back to replay." : "Recorded response failed validation after two attempts.");
 }
 function exportContent(c: Context, r: DemoRecord, t: DemoTemplate) {
   const a = t.approval!;
@@ -202,7 +238,7 @@ function exportContent(c: Context, r: DemoRecord, t: DemoTemplate) {
   const fieldText = t.fields.map(f => "## " + f.label + "\n\n" + f.value + "\n\nSource: " + (f.source?.id || f.cites.join(", ") || "Qualitative statement")).join("\n\n");
   const provenance = sources(c, r).map(s => "- " + s.id + ": " + s.value + (s.unit || "")).join("\n");
   const constants = c.dataset.constants.map(s => "- " + s.id + ": " + s.source + "; " + s.period + "; " + s.definition).join("\n");
-  return "# " + def.label + " — " + r.period + "\n\nFictional data / Données fictives. Replay demonstration.\n\n" + fieldText + "\n\n## Provenance\n\n" + r.source_location + "\nSnapshot: " + r.snapshot_id + "; cutoff: " + r.period_end + "; revision: " + t.revision + "\n\n" + provenance + "\n\n" + constants + "\n\n---\n\n" + disclosure + "\n";
+  return "# " + def.label + " — " + r.period + "\n\nFictional data / Données fictives. " + (t.ai_mode === "live" ? "Drafted by a live AI model, then checked and approved by a person." : "Replay demonstration.") + "\n\n" + fieldText + "\n\n## Provenance\n\n" + r.source_location + "\nSnapshot: " + r.snapshot_id + "; cutoff: " + r.period_end + "; revision: " + t.revision + "\n\n" + provenance + "\n\n" + constants + "\n\n---\n\n" + disclosure + "\n";
 }
 const exportFile = (c: Context, id: string, funder: string, revision: number) => path.join(c.runtime, "exports", safeId(id) + "-" + safeId(funder) + "-r" + revision + ".md");
 export async function getExport(id: string, funder_id: string, revision: number) {
@@ -233,8 +269,7 @@ export async function runAction(id: string, action: string, input: ActionInput =
         throw new DemoError("replay_missing", "No recorded response is available for this report."); return readJson(replayFile);
     };
     if (action === "extract") {
-      const p = recorded();
-      const out = await replay(c, r, "extract_facts", { facts: p.facts }, ExtractSchema, d => d.facts.flatMap(f => checkFact(f, r.original_text).problems), actor);
+      const out = await replay(c, r, "extract_facts", () => ({ facts: recorded().facts }), ExtractSchema, d => d.facts.flatMap(f => checkFact(f, r.original_text).problems), actor, r.original_text);
       r.facts = out.facts.map((f, i) => ({ ...f, fact_id: "F-" + String(i + 1).padStart(2, "0"), ...checkFact(f, r.original_text) }));
       r.french = null;
       r.completed = ["extract"];
@@ -252,7 +287,7 @@ export async function runAction(id: string, action: string, input: ActionInput =
     else if (action === "french") {
       if (!r.facts.length)
         throw new DemoError("not_extracted", "Extract source facts first.");
-      const out = await replay(c, r, "draft_french", recorded().french, FrenchSchema, d => checkFrench(r.original_text, d.text).problems, actor);
+      const out = await replay(c, r, "draft_french", () => recorded().french, FrenchSchema, d => checkFrench(r.original_text, d.text).problems, actor, r.original_text);
       const check = checkFrench(r.original_text, out.text);
       r.french = { text: out.text, check: check.check, problems: check.problems, items: buildFrenchItems(r.original_text, out.text, out.uncertain_words) };
       invalidate(r);
@@ -278,11 +313,14 @@ export async function runAction(id: string, action: string, input: ActionInput =
         expected(existing, input);
       const src = sources(c, r);
       const fields = def.numeric.map(f => { const s = src.find(s => s.id === f.source.id); return { ...f, kind: "number" as const, cites: [f.source.id], value: s ? new Intl.NumberFormat(def.language === "fr" ? "fr-CA" : "en-CA", { maximumFractionDigits: 5, useGrouping: false }).format(Number(s.value)) + (s.unit === "%" ? (def.language === "fr" ? " %" : "%") : "") : "", check: "red" as const, check_reason: null }; });
-      const data = recorded().templates[def.id];
-      if (!data)
-        throw new DemoError("replay_missing", "No recorded template response.");
-      const out = await replay(c, r, "fill_template", data.attempts, FillSchema, d => d.fields.flatMap(f => checkNarrative(f.value, f.cites, src).problems), actor);
-      const t: DemoTemplate = { standard_version: standardVersion(), funder_id: def.id, language: def.language, preparer: r.preparer, revision: (existing?.revision || 0) + 1, fields: [...fields, ...out.fields.map(f => ({ ...f, label: def.narrative.find(n => n.key === f.key)?.label || f.key, kind: "narrative" as const, source: null, check: "red" as const, check_reason: null }))], checks: [], review: null, approval: null, disclosure: null };
+      const attempts = () => {
+        const data = recorded().templates[def.id];
+        if (!data)
+          throw new DemoError("replay_missing", "No recorded template response.");
+        return data.attempts;
+      };
+      const out = await replay(c, r, "fill_template", attempts, FillSchema, d => d.fields.flatMap(f => checkNarrative(f.value, f.cites, src).problems), actor, fillPrompt(def, r, src), r.record_id + "-" + def.id);
+      const t: DemoTemplate = { standard_version: standardVersion(), funder_id: def.id, language: def.language, preparer: r.preparer, revision: (existing?.revision || 0) + 1, fields: [...fields, ...out.fields.map(f => ({ ...f, label: def.narrative.find(n => n.key === f.key)?.label || f.key, kind: "narrative" as const, source: null, check: "red" as const, check_reason: null }))], checks: [], review: null, approval: null, disclosure: null, ai_mode: aiMode() };
       r.templates[def.id] = verify(c, r, t);
     }
     else if (["edit", "review", "approve", "export"].includes(action)) {

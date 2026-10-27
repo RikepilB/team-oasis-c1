@@ -64,7 +64,7 @@ afterEach(() => {
 const ok = (parsed: unknown, extra: object = {}) => ({
   stop_reason: "end_turn",
   parsed_output: parsed,
-  model: "claude-opus-5-5",
+  model: "claude-haiku-5-5",
   usage: { input_tokens: 10, output_tokens: 5 },
   ...extra,
 });
@@ -100,7 +100,7 @@ describe("live provider", () => {
     expect(sdk.parse).toHaveBeenCalledTimes(1);
     const args = sdk.parse.mock.calls[0][0];
     expect(args).toMatchObject({
-      model: "claude-opus-5-5",
+      model: "claude-haiku-5-5",
       max_tokens: 16000,
       system: getSkill("extract_facts")!.instruction,
       messages: [{ role: "user", content: "the report" }],
@@ -116,7 +116,7 @@ describe("live provider", () => {
       key: "kijana-q1-test",
       provider: "live",
       attempt: 1,
-      model: "claude-opus-5-5",
+      model: "claude-haiku-5-5",
       usage: { input_tokens: 10, output_tokens: 5 },
     });
   });

@@ -7,7 +7,12 @@ import { dataDir, isRecordId } from "@/lib/record/store";
 
 // Live calls Claude. This is the only file that imports the SDK: it stands in for the approved
 // Workspace Suite add-on, and swapping the tool means swapping this file.
-export const MODEL = "claude-opus-5-5";
+// Claude Haiku 5.5 by default: fast and low-cost for extraction, French drafts and template filling.
+// Set SYNAPSE_MODEL in .env.local (for example "claude-sonnet-5-5") to try another Claude model without a code change.
+export const DEFAULT_MODEL = "claude-haiku-5-5";
+export const activeModel = () => process.env.SYNAPSE_MODEL?.trim() || DEFAULT_MODEL;
+/** @deprecated read activeModel() so a changed SYNAPSE_MODEL takes effect */
+export const MODEL = DEFAULT_MODEL;
 
 const fail = (kind: "no_key" | "network" | "refusal" | "parse", message: string): ProviderResult => ({
   ok: false,
@@ -50,7 +55,7 @@ export const liveProvider: ProviderFn = async ({ job, key, attempt, system, inpu
   try {
     const client = new Anthropic(); // built only now, after the key check
     const response = await client.messages.parse({
-      model: MODEL,
+      model: activeModel(),
       max_tokens: 16000,
       system,
       output_config: { effort: "low", format: zodOutputFormat(schema) },

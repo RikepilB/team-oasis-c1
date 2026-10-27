@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FrenchReviewPanel } from "@/components/french-review";
 import { api, useCurrentRecordId, useLanguage } from "@/components/shell";
+import { GuardedButton } from "@/components/ui";
 import type { Catalog } from "@/lib/demo/catalog";
 import type { EvidenceAnswer } from "@/lib/demo/questions";
 type Turn = { id: number; record_id: string; question: string; answer?: EvidenceAnswer; error?: string };
@@ -41,7 +42,7 @@ export function AssistantPanel({ reports, onClose }: { reports: Catalog; onClose
     {current ? <p className="assistant-context">{t("About", "À propos de")} <strong>{report?.title ?? current}</strong></p> :
       <label className="assistant-context">{t("Report", "Rapport")}<select value={recordId} onChange={e => setPicked(e.target.value)}>{reports.map(r => <option key={r.record_id} value={r.record_id}>{r.title}</option>)}</select></label>}
     <div className="assistant-thread" aria-live="polite">
-      {thread.length === 0 && <div className="assistant-empty"><p>{t("Try a question:", "Essayez une question :")}</p>{suggestions.map(([en, fr]) => <button type="button" key={en} className="assistant-chip" disabled={busy || !recordId} onClick={() => void ask(t(en, fr))}>{t(en, fr)}</button>)}</div>}
+      {thread.length === 0 && <div className="assistant-empty"><p>{t("Try a question:", "Essayez une question :")}</p>{suggestions.map(([en, fr]) => <GuardedButton key={en} className="assistant-chip" busy={busy} reason={!recordId ? t("Open a report first, or pick one in the Report list above.", "Ouvrez d’abord un rapport, ou choisissez-en un dans la liste.") : null} onClick={() => void ask(t(en, fr))}>{t(en, fr)}</GuardedButton>)}</div>}
       {thread.map(x => <div key={x.id} className="assistant-turn"><p className="assistant-question">{x.question}</p>
         {x.error ? <p className="assistant-answer error-text">✕ {x.error}</p> : !x.answer ? <p className="assistant-answer muted">{t("Looking in the sources…", "Recherche dans les sources…")}</p> :
           <div className="assistant-answer"><p>{x.answer.answer}</p>{x.answer.citations.map(c => <blockquote key={c.id}><strong>{c.id}</strong> {c.quote}<small>{c.file} · {c.location}</small></blockquote>)}{x.answer.links.map(l => <Link key={l.href} href={l.href}>{l.label} ↗</Link>)}</div>}</div>)}
@@ -50,7 +51,7 @@ export function AssistantPanel({ reports, onClose }: { reports: Catalog; onClose
     <form className="assistant-form" onSubmit={e => { e.preventDefault(); void ask(question); }}>
       <label className="sr-only" htmlFor="assistant-question">{t("Ask about this report", "Question sur ce rapport")}</label>
       <textarea id="assistant-question" rows={2} maxLength={500} value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void ask(question); } }} placeholder={t("Ask about this report…", "Posez une question sur ce rapport…")} disabled={!recordId} />
-      <button className="primary" disabled={busy || question.trim().length < 2 || !recordId}>{busy ? "…" : t("Ask", "Demander")}</button>
+      <GuardedButton type="submit" className="primary" busy={busy} reason={!recordId ? t("Open a report first, or pick one in the Report list above.", "Ouvrez d’abord un rapport, ou choisissez-en un dans la liste.") : question.trim().length < 2 ? t("Type a question first.", "Écrivez d’abord une question.") : null}>{busy ? "…" : t("Ask", "Demander")}</GuardedButton>
     </form>
     <p className="assistant-note">{t("Verified lookup over this report’s facts and checks. Replay mode: no live model call.", "Recherche vérifiée dans les faits et contrôles du rapport. Mode rejeu : aucun modèle appelé.")}</p>
     </>}

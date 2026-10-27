@@ -6,7 +6,8 @@ import type { DemoRecord, DemoTemplate } from "@/lib/demo/types";
 import type { AuditEvent } from "@/lib/demo/types";
 import workflow from "@/standard/workflows/funder-report.json";
 import { TABS, STEP_TAB, type Tab } from "@/lib/demo/report-tabs";
-import { actionFor, canDo } from "@/lib/demo/people";
+import { actionFor, canDo, whoCan, ROLE_LABEL } from "@/lib/demo/people";
+import { GuardedButton, Tip, ExportDialog, downloadFile, type ExportFormat } from "@/components/ui";
 import { PersonSelect, SwitchNotice, usePerson } from "@/components/person-switcher";
 import { publishRecord, useLiveRecord } from "@/components/live-record";
 import { FrenchDocuments } from "@/components/french-review";
@@ -30,21 +31,26 @@ export default function RunWorkspace({ id, tab, initialFunder }: { id: string; t
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [exportDialog, setExportDialog] = useState<null | "confirm" | "download">(null);
   const template = record?.templates[funder];
   const percent = (n: number) => new Intl.NumberFormat(language === "fr" ? "fr-CA" : "en-CA", { maximumFractionDigits: 1 }).format(n) + (language === "fr" ? " %" : "%");
   const evidence = (definition: string) => "/evidence/water-points?snapshot=" + record?.snapshot_id + "&cutoff=" + record?.period_end + "&definition=" + definition;
   const href = (to: Tab) => "/runs/" + encodeURIComponent(id) + (to === "overview" ? "" : "?tab=" + to) + (funder === "quebec" ? (to === "overview" ? "?" : "&") + "funder=quebec" : "");
-  async function action(name: string, extra: Record<string, unknown> = {}) {
+  async function action(name: string, extra: Record<string, unknown> = {}): Promise<boolean> {
     setBusy(name); setError(""); setNotice("");
     try {
       const next = await api<DemoRecord>("/api/reports/" + id + "/" + name, { actor: actor || preparer, preparer: preparer || actor, funder_id: funder, ...(template ? { expected_revision: template.revision } : {}), ...extra });
       publishRecord(next);
       setNotice(t("Saved. Checks and review state are up to date.", "Enregistré. Les contrôles et les révisions sont à jour."));
-    } catch (e) { setError(e instanceof Error ? e.message : "Request failed"); }
+      return true;
+    } catch (e) { setError(e instanceof Error ? e.message : "Request failed"); return false; }
     finally { setBusy(""); }
   }
   const named = !!(actor || preparer).trim();
-  const button = (name: string, en: string, fr: string, extra?: Record<string, unknown>) => <><button className="primary" disabled={!!busy || !named || !allowed(name)} onClick={() => action(name, extra)}>{busy === name ? t("Checking…", "Vérification…") : t(en, fr)} <span>→</span></button>{named && !allowed(name) && <SwitchNotice action={actionFor(name)} />}</>;
+  // Every unavailable action says why, as the next thing to do (design system v3.2: no silent dead buttons).
+  const roleReason = (step: string) => { const to = whoCan(actionFor(step)); return t("Only the " + ROLE_LABEL[to.role][0].toLowerCase() + " can do this. Switch to " + to.name + " under “Acting as”.", "Seul le rôle " + ROLE_LABEL[to.role][1].toLowerCase() + " peut le faire. Choisissez " + to.name + " sous « Agir en tant que ».") };
+  const stepReason = (step: string) => !named ? t("Pick a person under “Acting as” first.", "Choisissez d’abord une personne sous « Agir en tant que ».") : !allowed(step) ? roleReason(step) : null;
+  const button = (name: string, en: string, fr: string, extra?: Record<string, unknown>) => <><GuardedButton className="primary" busy={!!busy} reason={stepReason(name)} onClick={() => void action(name, extra)}>{busy === name ? t("Checking…", "Vérification…") : t(en, fr)} <span aria-hidden="true">→</span></GuardedButton>{named && !allowed(name) && <SwitchNotice action={actionFor(name)} />}</>;
   if (remote.loading && !record) return <main id="main" className="page"><Loading /></main>;
   if (!record) return <main id="main" className="page"><Message error={remote.error} /><Link href="/">{t("Back to the Inbox", "Retour à la boîte de réception")}</Link></main>;
   const openFrench = record.french?.items.filter(i => !i.decision).length ?? 0;
@@ -53,18 +59,39 @@ export default function RunWorkspace({ id, tab, initialFunder }: { id: string; t
   const frenchPending = (tpl?: DemoTemplate) => tpl?.language === "fr" && tpl.review?.revision !== tpl.revision;
   const stepDone = (key: string) => record.completed.includes(key) || key === "record" || (key === "template" && !!template) || (key === "review" && (!!template?.review || template?.language === "en")) || (key === "approve" && !!template?.approval) || (key === "export" && !!template?.approval?.sent_at);
   const nextStep = STEPS.find(([key]) => !stepDone(key));
-  const canApprove = !!template && !busy && !!actor.trim() && allowed("approve") && blocks(template).length === 0 && !frenchPending(template) && template.approval?.approved_revision !== template.revision;
-  const canExport = !!template?.approval && !template.approval.sent_at && !busy && !!actor.trim() && allowed("export");
   const notNamed = !named && <p className="muted small">{t("Pick a person in the sidebar, or enter a custom name in Settings, to run this step.", "Choisissez une personne dans le menu, ou un nom dans Paramètres, pour lancer cette étape.")}</p>;
   // The bar names who acts next instead of showing two dead buttons.
   const barAction = !template || template.approval?.sent_at ? null : frenchPending(template) ? "review" : template.approval?.approved_revision === template.revision ? "export" : "approve";
   const selfApproval = !!template && allowed("approve") && actor.trim().toLowerCase() === template.preparer.trim().toLowerCase();
+  const approveReason = !template ? t("Build this funder version first, under Standardized draft.", "Créez d’abord cette version dans Ébauche normalisée.")
+    : stepReason("approve") ?? (selfApproval ? t("You prepared this version. A different person must approve it.", "Vous avez préparé cette version. Une autre personne doit l’approuver.")
+    : blocks(template).length ? t("Fix the blocking checks first: ", "Corrigez d’abord les contrôles bloquants : ") + blocks(template).map(c => t(c.label, CHECK_FR[c.rule_id] || c.label)).join(", ") + t(". See Issues & evidence.", ". Voir Problèmes et données.")
+    : frenchPending(template) ? t("Finish the bilingual review under French version first.", "Terminez d’abord la révision bilingue dans Version française.")
+    : template.approval?.approved_revision === template.revision ? t("This revision is already approved. Next: confirm export.", "Cette révision est déjà approuvée. Suite : confirmer l’export.") : null);
+  const exportReason = !template ? t("Build this funder version first, under Standardized draft.", "Créez d’abord cette version dans Ébauche normalisée.")
+    : template.approval?.sent_at ? t("Already exported. Use Download to get the file again.", "Déjà exportée. Utilisez Télécharger pour obtenir le fichier.")
+    : !template.approval || template.approval.approved_revision !== template.revision ? t("Approve the content first. Export is step 2 of 2.", "Approuvez d’abord le contenu. L’export est l’étape 2 sur 2.")
+    : stepReason("export");
+  const when = (at: string) => { const d = new Date(at); return isNaN(d.getTime()) ? at : d.toLocaleString(language === "fr" ? "fr-CA" : "en-CA", { dateStyle: "medium", timeStyle: "short" }); };
+  const exportHref = (format: ExportFormat) => template ? "/api/reports/" + id + "/export?funder_id=" + funder + "&revision=" + template.revision + "&format=" + format : "";
+  async function confirmExport(format: ExportFormat) {
+    const confirming = exportDialog === "confirm";
+    if (confirming) {
+      const ok = await action("export");
+      if (!ok) { setExportDialog(null); return; }
+    }
+    downloadFile(exportHref(format));
+    setExportDialog(null);
+    setNotice(confirming
+      ? t("Exported and logged. Your " + (format === "pdf" ? "PDF" : "Word document") + " is downloading.", "Exportée et consignée. Votre " + (format === "pdf" ? "PDF" : "document Word") + " se télécharge.")
+      : t("Downloading the exported report.", "Téléchargement du rapport exporté."));
+  }
   const funderPicker = <label className="funder-picker">{t("Funder version", "Version du bailleur")}<select value={funder} onChange={e => { setFunder(e.target.value as "fdf" | "quebec"); setError(""); setNotice(""); }}>{(Object.keys(FUNDERS) as (keyof typeof FUNDERS)[]).map(f => <option key={f} value={f}>{t(...FUNDERS[f])}</option>)}</select></label>;
   const fields = (tpl: DemoTemplate, editable: boolean) => <div lang={tpl.language}>{tpl.fields.map(f => <article className={"template-field " + (f.check === "red" ? "has-error" : "")} key={f.key}><div className="field-heading"><label htmlFor={"field-" + f.key}>{f.label}</label><Badge ok={f.check === "green"}>{f.check === "green" ? t("Verified", "Vérifié") : t("Needs attention", "À vérifier")}</Badge></div>{f.kind === "narrative" && editable ? <EditableField key={tpl.funder_id + "-" + tpl.revision + "-" + f.key} id={"field-" + f.key} value={f.value} disabled={!!busy || !allowed("edit")} onSave={value => action("edit", { key: f.key, value })} saveLabel={t("Save & check", "Enregistrer et vérifier")} /> : f.kind === "narrative" ? <p className="field-text">{f.value}</p> : <strong className="numeric-value">{f.value}</strong>}<p className="source-chip">{t("Source", "Source")} · {f.source?.id || f.cites.join(" · ") || t("Qualitative statement", "Énoncé qualitatif")}</p>{f.check_reason && <p className="error-text">{f.check_reason}</p>}</article>)}</div>;
   const versionState = (tpl?: DemoTemplate) => !tpl ? t("Not prepared", "Non préparée") : tpl.approval?.sent_at && tpl.approval.approved_revision === tpl.revision ? t("Exported", "Exportée") : tpl.approval?.approved_revision === tpl.revision ? t("Approved · export pending", "Approuvée · export en attente") : blocks(tpl).length ? t("Blocked by checks", "Bloquée par des contrôles") : frenchPending(tpl) ? t("French review needed", "Révision française requise") : t("Ready for approval", "Prête pour l’approbation");
   return <main id="main" className="page run-page">
     <div className="breadcrumb"><Link href="/">{t("Inbox", "Boîte de réception")}</Link><span>/</span><span>{record.period}</span></div>
-    <div className="run-heading"><div><h1>{record.title}</h1><p className="muted">{record.source_location} · {t("Cutoff", "Date limite")} {record.period_end} · {t("Received", "Reçu")} {record.received_date}</p></div><div className="identity-fields"><label>{t("Preparer", "Préparateur")}<input value={record.preparer || t("Set by the first step", "Fixé à la première étape")} disabled readOnly /></label><PersonSelect label={t("Acting as", "Agir en tant que")} /></div></div>
+    <div className="run-heading"><div><h1>{record.title}</h1><p className="muted">{record.source_location} · {t("Cutoff", "Date limite")} {record.period_end} · {t("Received", "Reçu")} {record.received_date}</p></div><div className="identity-fields"><label>{t("Preparer", "Préparateur")}<Tip text={t("Filled in automatically by whoever runs the first step. It can’t be typed.", "Rempli automatiquement par la personne qui lance la première étape. Non modifiable.")}><input value={record.preparer || t("Set by the first step", "Fixé à la première étape")} disabled readOnly aria-readonly="true" /></Tip></label><PersonSelect label={t("Acting as", "Agir en tant que")} /></div></div>
     <Message error={error || remote.error} />{notice && <p role="status" className="message success">{notice}</p>}
     <nav className="report-tabs" aria-label={t("Report sections", "Sections du rapport")}>{TABS.map(([key, en, fr]) => <Link key={key} href={href(key)} scroll={false} aria-current={tab === key ? "page" : undefined}>{t(en, fr)}</Link>)}</nav>
     <section className="report-panel" aria-labelledby="tab-heading">
@@ -105,8 +132,18 @@ export default function RunWorkspace({ id, tab, initialFunder }: { id: string; t
     </section>
     <div className="report-actionbar" role="region" aria-label={t("Approval and export", "Approbation et export")}>
       <div className="actionbar-inner">{funderPicker}{!actor.trim() && <span className="actionbar-hint">{t("Pick a person in the sidebar to approve or export.", "Choisissez une personne dans le menu pour approuver ou exporter.")}</span>}{actor.trim() && barAction && !allowed(barAction) && <div className="actionbar-hint"><SwitchNotice action={barAction} /></div>}{selfApproval && barAction === "approve" && <span className="actionbar-hint">{t("You prepared this version. A different person must approve it.", "Vous avez préparé cette version. Une autre personne doit l’approuver.")}</span>}<span className="actionbar-state"><strong>{template ? t("Revision", "Révision") + " " + template.revision : "—"}</strong> · {versionState(template)}</span>
-        <div className="actionbar-buttons"><button className="secondary" disabled={!canApprove} onClick={() => action("approve")}>{busy === "approve" ? t("Checking…", "Vérification…") : t("Approve content", "Approuver le contenu")}</button><button className="primary" disabled={!canExport} onClick={() => action("export")}>{busy === "export" ? t("Exporting…", "Export…") : t("Confirm export", "Confirmer l’export")}</button>{template?.approval?.sent_at && <span className="download-links"><span>{t("Download", "Télécharger")}</span>{([["pdf", "PDF"], ["docx", "Word"], ["xlsx", "Excel"], ["md", "Markdown"]] as const).map(([f, label]) => <a key={f} className="download-link" href={"/api/reports/" + id + "/export?funder_id=" + funder + "&revision=" + template.revision + "&format=" + f}>{label} ↓</a>)}</span>}</div></div>
+        <div className="actionbar-buttons"><GuardedButton className="secondary" busy={busy === "approve"} reason={approveReason} onClick={() => void action("approve")}>{busy === "approve" ? t("Checking…", "Vérification…") : t("Approve content", "Approuver le contenu")}</GuardedButton>{template?.approval?.sent_at
+          ? <button type="button" className="primary" aria-haspopup="dialog" onClick={() => setExportDialog("download")}>{t("Download…", "Télécharger…")}</button>
+          : <GuardedButton className="primary" busy={busy === "export"} reason={exportReason} aria-haspopup="dialog" onClick={() => setExportDialog("confirm")}>{busy === "export" ? t("Exporting…", "Export…") : t("Confirm export…", "Confirmer l’export…")}</GuardedButton>}</div></div>
     </div>
+    <ExportDialog open={!!exportDialog} mode={exportDialog ?? "confirm"} busy={busy === "export"} onClose={() => setExportDialog(null)} onConfirm={f => void confirmExport(f)}
+      summary={template ? [
+        { label: t("Report", "Rapport"), value: record.title },
+        { label: t("Funder version", "Version du bailleur"), value: t(...FUNDERS[funder]) },
+        { label: t("Revision", "Révision"), value: String(template.revision) },
+        { label: t("Approved by", "Approuvée par"), value: template.approval ? template.approval.approver + " · " + when(template.approval.content_approved_at) : "—" },
+        { label: template.approval?.sent_at ? t("Exported", "Exportée") : t("Will be logged as", "Sera inscrite au nom de"), value: template.approval?.sent_at ? when(template.approval.sent_at) : actor || "—" },
+      ] : []} />
   </main>;
 }
 function Activity({ id }: { id: string }) {
@@ -118,4 +155,4 @@ function Activity({ id }: { id: string }) {
   return <><Message error={error} />{data && <p>{data.valid ? <Badge ok>{t("Audit chain intact", "Chaîne d’audit intacte")}</Badge> : <Badge ok={false}>{t("Audit chain broken", "Chaîne d’audit rompue")}</Badge>} <Link href="/log">{t("Full activity log", "Journal complet")} ↗</Link></p>}
     {entries.length === 0 ? <p className="empty-note">{t("No recorded activity for this report yet.", "Aucune activité enregistrée pour ce rapport.")}</p> : <ol className="activity-list">{entries.map(e => <li key={e.id}><time dateTime={e.at}>{when(e.at)}</time><strong>{e.actor}</strong><span className="activity-action">{e.action}</span><code>{Object.entries(e.detail).filter(([, v]) => typeof v !== "object").slice(0, 4).map(([k, v]) => k + ": " + String(v)).join(" · ")}</code></li>)}</ol>}</>;
 }
-function EditableField({ id, value, disabled, onSave, saveLabel }: { id: string; value: string; disabled: boolean; onSave: (s: string) => void; saveLabel: string }) { const [draft, setDraft] = useState(value); return <><textarea id={id} rows={4} value={draft} onChange={e => setDraft(e.target.value)} disabled={disabled} />{draft !== value && <button className="secondary" disabled={disabled} onClick={() => onSave(draft)}>{saveLabel}</button>}</>; }
+function EditableField({ id, value, disabled, onSave, saveLabel }: { id: string; value: string; disabled: boolean; onSave: (s: string) => void; saveLabel: string }) { const { t } = useLanguage(); const [draft, setDraft] = useState(value); return <>{disabled ? <Tip block text={t("Only the preparer can edit the narrative. Switch person under “Acting as”, or wait for the current step to finish.", "Seul le préparateur peut modifier le texte. Changez de personne sous « Agir en tant que », ou attendez la fin de l’étape.")}><textarea id={id} rows={4} value={draft} readOnly aria-readonly="true" /></Tip> : <textarea id={id} rows={4} value={draft} onChange={e => setDraft(e.target.value)} />}{draft !== value && <GuardedButton className="secondary" reason={disabled ? t("You can’t save right now.", "Impossible d’enregistrer pour l’instant.") : null} onClick={() => onSave(draft)}>{saveLabel}</GuardedButton>}</>; }

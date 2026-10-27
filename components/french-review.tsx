@@ -5,6 +5,7 @@ import { useAssistant, useLanguage, Loading, Message } from "@/components/shell"
 import { runRecordAction, useLiveRecord } from "@/components/live-record";
 import { SwitchNotice, usePerson } from "@/components/person-switcher";
 import { canDo } from "@/lib/demo/people";
+import { GuardedButton } from "@/components/ui";
 import type { DemoRecord, FrenchItem } from "@/lib/demo/types";
 
 const markId = (id: string) => "fr-item-" + id;
@@ -119,10 +120,10 @@ function ReviewCard({ item, can, busy, declining, onLocate, onDeclining, onDecid
       <label>{t("What is wrong?", "Qu’est-ce qui ne va pas ?")}<textarea rows={2} maxLength={500} value={note} onChange={e => setNote(e.target.value)} placeholder={t("e.g. The funder’s wording is “aménagement”.", "p. ex. Le bailleur emploie « aménagement ».")} autoFocus /></label>
       <label>{t("Corrected French", "Français corrigé")}<input lang="fr" value={value} maxLength={200} onChange={e => setValue(e.target.value)} /></label>
       {item.alternatives.length > 0 && <div className="alt-chips" aria-label={t("Suggestions", "Suggestions")}>{item.alternatives.map(a => <button type="button" key={a} lang="fr" aria-pressed={value === a} onClick={() => setValue(a)}>{a}</button>)}</div>}
-      <div className="review-actions"><button type="button" className="secondary" onClick={() => onDeclining(false)}>{t("Cancel", "Annuler")}</button><button className="primary" disabled={busy || !note.trim() || !value.trim()}>{busy ? "…" : t("Decline and apply fix", "Refuser et corriger")}</button></div>
+      <div className="review-actions"><button type="button" className="secondary" onClick={() => onDeclining(false)}>{t("Cancel", "Annuler")}</button><GuardedButton type="submit" className="primary" busy={busy} reason={!note.trim() ? t("Say why you’re declining first.", "Indiquez d’abord pourquoi vous refusez.") : !value.trim() ? t("Enter the corrected French first.", "Saisissez d’abord le français corrigé.") : null}>{busy ? "…" : t("Decline and apply fix", "Refuser et corriger")}</GuardedButton></div>
     </form> : <div className="review-actions">
-      <button type="button" className="primary review-approve" disabled={!can || busy} onClick={() => onDecide("approve")}>{busy ? "…" : "✓ " + t("Approve", "Approuver")}</button>
-      <button type="button" className="secondary review-decline-btn" disabled={!can || busy} onClick={() => onDeclining(true)}>✕ {t("Decline", "Refuser")}</button>
+      <GuardedButton className="primary review-approve" busy={busy} reason={!can ? t("Only the bilingual reviewer can decide. Switch to the Bilingual Content Coordinator under “Acting as”.", "Seul le réviseur bilingue peut décider. Choisissez la coordonnatrice bilingue sous « Agir en tant que ».") : null} onClick={() => onDecide("approve")}>{busy ? "…" : "✓ " + t("Approve", "Approuver")}</GuardedButton>
+      <GuardedButton className="secondary review-decline-btn" busy={busy} reason={!can ? t("Only the bilingual reviewer can decide. Switch to the Bilingual Content Coordinator under “Acting as”.", "Seul le réviseur bilingue peut décider. Choisissez la coordonnatrice bilingue sous « Agir en tant que ».") : null} onClick={() => onDeclining(true)}>✕ {t("Decline", "Refuser")}</GuardedButton>
     </div>}
   </article>;
 }

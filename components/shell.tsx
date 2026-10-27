@@ -45,7 +45,7 @@ const WORKSPACE: [string, string, string, string][] = [["/", "Inbox", "Boîte de
 // Small line icons for the main sections only, so the rail stays readable when collapsed.
 // Icons: Lucide line set, one size (20px), see components/icons.tsx.
 // Files & resources is one folder: sources first, then everything that explains a number.
-const RESOURCES: [string, string, string][] = [["/evidence/water-points", "Evidence", "Données"], ["/standard#workflow", "Workflow & rules", "Parcours et règles"], ["/log", "Activity log", "Journal d’activité"], ["/standard#prompts", "Prompts", "Consignes"], ["/standard#skills", "Skills", "Compétences"]];
+const RESOURCES: [string, string, string][] = [["/evidence/water-points", "Evidence", "Données"], ["/standard#workflow", "Workflow & rules", "Parcours et règles"], ["/log", "Activity log", "Journal d’activité"], ["/standard#prompts", "Prompts", "Consignes"], ["/skills", "Skills", "Compétences"]];
 // Text size, right in the top bar: three "A"s from small to large. It scales the whole interface, like browser
 // zoom, so layouts stay intact, and it is remembered on this device.
 const TEXT_SIZES: [TextSize, string, string, string][] = [["100", "Standard text size", "Taille de texte standard", "sm"], ["115", "Larger text", "Texte plus grand", "md"], ["130", "Largest text", "Texte le plus grand", "lg"]];

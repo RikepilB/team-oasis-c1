@@ -44,8 +44,8 @@ export function draftFrench(r: FactRecord, opts: JobOpts<FrenchOut> = {}): Promi
   return runStep("draft_french", r.record_id, r.original_text, FrenchSchema, { ...opts, record_id: r.record_id });
 }
 
-// A funder template's language. Task 6 reads templates from standard/templates/; until then the
-// prompt needs only this to say which language to write in.
+// A funder template's language, for this harness's fill prompt. The workspace reads each template's
+// language from standard/templates/*.json; this map also covers the harness-only cedar_stone funder.
 const FUNDER_LANGUAGE: Record<FunderId, "English" | "French"> = {
   fdf: "English",
   quebec: "French",

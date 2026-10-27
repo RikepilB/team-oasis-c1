@@ -145,7 +145,7 @@ Content/evidence changes invalidate dependent approvals. Missing observations st
 - Next routes split by page; the evidence assistant is imported only when opened.
 - Simultaneous identical browser GETs share one in-flight request, without retaining stale approvals.
 - The report catalog reads all report summaries in one transaction instead of one transaction per record.
-- The interface uses Inter (loaded from Google Fonts, with system-font fallback). Source Sans 3 is still bundled as WOFF2 for the Astro site, with its OFL and pinned provenance preserved.
+- The interface uses Inter, self-hosted at build time through `next/font` so visitors never contact Google Fonts, with system-font fallback. Source Sans 3 is still bundled as WOFF2 for the Astro site, with its OFL and pinned provenance preserved.
 - HTTP compression is enabled; font assets have cache headers.
 - Redis caches only saved evidence views, keyed by dataset, namespace, snapshot and filters, with a one-hour TTL. Its responses are schema checked. Unavailable/corrupt cache entries fall back to PostgreSQL; mutable/current views bypass caching. `X-Synapse-Cache` reports `hit`, `miss` or `bypass`.
 - `/api/health` shows storage mode, AI mode and model, whether a key is set (never the key), and Redis configuration. Configuration alone does not prove Redis availability.
@@ -170,6 +170,8 @@ The default suite skips real PostgreSQL tests. To run them, set `SYNAPSE_DATABAS
 ```bash
 node scripts/smoke-demo.mjs https://your-demo.example
 ```
+
+To give every screen something to show, `npm run seed:demo -- <base-url>` walks the untouched demo reports to different stages through the same API: one received, one being cleaned, one with a draft, one waiting for the bilingual review, one approved and one exported. It uses the demo people, skips any report that already has progress, and logs every step like a person would.
 
 Root `vercel.json` deploys Next.js. Set the server-only database and Redis variables in Vercel, plus `SYNAPSE_STORAGE=postgres`, `SYNAPSE_DATA_DIR=data/fixtures/demo` and a stable `SYNAPSE_NAMESPACE`. Review `.vercelignore` before every upload. No secrets, challenge pack or local session history belongs in a deployment.
 

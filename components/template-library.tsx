@@ -39,9 +39,9 @@ export function TemplateLibrary() {
     <Message error={standard.error} />
     {standard.loading ? <Loading /> : <div className="template-grid">{standard.data?.templates.map(tpl => { const preset = PRESETS.find(p => p.standard === tpl.id); return <article className="template-card is-standard" key={tpl.id}>
       <div className="template-card-top"><span className="template-lang">{tpl.language.toUpperCase()}</span><span className="status-pill" data-status="completed">{t("Approved", "Approuvé")}</span></div>
-      <h3>{tpl.label}</h3><p className="muted small">{tpl.numeric.length} {t("numbers from code", "chiffres calculés")} · {tpl.narrative.length} {t("cited sections", "sections sourcées")} · {t("version", "version")} <code>{tpl.version}</code></p>
+      <h3><Link href={"/templates/" + tpl.id}>{tpl.label}</Link></h3><p className="muted small">{tpl.numeric.length} {t("numbers from code", "chiffres calculés")} · {tpl.narrative.length} {t("cited sections", "sections sourcées")} · {t("version", "version")} <code>{tpl.version}</code></p>
       <ul className="template-fields">{tpl.numeric.slice(0, 4).map(f => <li key={f.key}>{f.label} <code>{f.source.id}</code></li>)}{tpl.numeric.length > 4 && <li className="muted">+ {tpl.numeric.length - 4}</li>}</ul>
-      {preset && <Link className="secondary" href={"/templates/new?preset=" + preset.id}>{t("Duplicate as draft", "Dupliquer en ébauche")}</Link>}
+      <div className="template-actions"><Link className="secondary" href={"/templates/" + tpl.id}>{t("View", "Voir")}</Link>{preset && <Link className="secondary" href={"/templates/new?preset=" + preset.id}>{t("Duplicate as draft", "Dupliquer en ébauche")}</Link>}</div>
     </article>; })}</div>}
     <h2 className="templates-section">{t("Presets", "Modèles prêts à l’emploi")}</h2>
     <div className="template-grid">{PRESETS.filter(p => !p.standard).map(p => <article className="template-card" key={p.id}>

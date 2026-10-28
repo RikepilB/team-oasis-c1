@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { FrenchReviewPanel } from "@/components/french-review";
+import { FrenchReviewPanel } from "@/components/french-review-panel";
 import { api, useCurrentRecordId, useLanguage } from "@/components/shell";
 import { GuardedButton } from "@/components/ui";
 import type { Catalog } from "@/lib/demo/catalog";

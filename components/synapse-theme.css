@@ -647,8 +647,9 @@ a.template-link:hover{border-color:var(--navy-900)}
 @media (max-width:860px){.detail-grid,.definition-cards,.tier-options{grid-template-columns:1fr}.wizard-steps{grid-template-columns:1fr 1fr}.skill-preview{position:static}.map-rows li{grid-template-columns:1fr;gap:4px}.map-arrow{transform:rotate(90deg);justify-self:start;padding-left:var(--space-4)}.skill-meta{grid-template-columns:1fr}}
 
 /* Phone top bar: tighter gaps, a compact language menu and icon-only buttons, with the search box taking
-   whatever room is left, so the bar fits a 320–430px screen and its right-aligned tips stay on screen. */
-@media (max-width:480px){
+   whatever room is left, so the bar fits from 320px up and its right-aligned tips stay on screen. Up to 640px,
+   because the roomier desktop padding returns above it and squeezes the search box again. */
+@media (max-width:640px){
   .synapse-topbar{gap:var(--space-2);padding-right:var(--space-2)}
   .synapse-topbar-start{padding:0 0 0 var(--space-2);gap:0}
   .synapse-search{min-width:0}
@@ -657,3 +658,12 @@ a.template-link:hover{border-color:var(--navy-900)}
   .synapse-topbar-tools select{padding:8px 26px 8px 8px;background-position:right 6px center}
   .guide-toggle,.assistant-toggle{padding:8px 10px}
 }
+/* Narrow phones leave the search box too small to type in, so while it has focus it widens over the whole
+   bar (results use mouse-down, so picking one doesn't collapse it first). At rest it shows just the icon. */
+@media (max-width:420px){
+  .synapse-search:focus-within{position:absolute;left:var(--space-2);right:var(--space-2);max-width:none;z-index:2}
+  .synapse-search input:not(:focus)::placeholder{color:transparent}
+}
+.assistant-loading{padding:var(--space-5)}
+/* Off the Approvals tab the action bar sits in the page, so it looks like the report panel, not floating glass. */
+.report-actionbar.is-inline{background:var(--bone-50);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(255,255,255,.9);border-radius:var(--radius-card);box-shadow:var(--neu-raised)}

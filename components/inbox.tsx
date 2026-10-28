@@ -35,9 +35,11 @@ export function Inbox({ mode = "inbox" }: { mode?: "inbox" | "reports" }) {
   const rows = data ?? [];
   const projects = [...new Set(rows.map(r => r.project).filter((v): v is string => !!v))].sort();
   const funders = [...new Set(rows.map(r => r.funder).filter((v): v is string => !!v))].sort();
-  // Priority first, then the nearest deadline (design.md: priority, then due date). Flipping the Due column
-  // reverses dated reports only; a report with no deadline always stays after the dated ones.
-  const due = (r: CatalogRecord) => dueDate(r)?.date;
+  // Priority first, then the nearest deadline (design.md: priority, then due date). Reports with a deadline always
+  // come before those without; flipping the Due column reverses the order within each of those two groups.
+  // Each report's deadline is worked out once per render, not on every comparison.
+  const dues = new Map(rows.map(r => [r.record_id, dueDate(r)]));
+  const due = (r: CatalogRecord) => dues.get(r.record_id)?.date;
   const items = filterReports(rows, view, query, { status, project, funder, me }).sort((a, b) => priorityRank(a) - priorityRank(b) || (!due(a) !== !due(b) ? (due(a) ? -1 : 1) : (soonestFirst ? 1 : -1) * ((due(a) ?? "") + a.received_date).localeCompare((due(b) ?? "") + b.received_date)));
   const filtered = !!(query.trim() || status || project || funder);
   const clear = () => { setQuery(""); setStatus(""); setProject(""); setFunder(""); };
@@ -62,7 +64,7 @@ export function Inbox({ mode = "inbox" }: { mode?: "inbox" | "reports" }) {
             <thead><tr><th scope="col" className="col-priority">{t("Priority", "Priorité")}</th><th scope="col">{t("Report", "Rapport")}</th><th scope="col" aria-sort={soonestFirst ? "ascending" : "descending"}><button type="button" className="sort-button" onClick={() => setSoonestFirst(!soonestFirst)}>{t("Due", "Échéance")} <span aria-hidden="true">{soonestFirst ? "↑" : "↓"}</span></button></th><th scope="col">{t("Owner", "Responsable")}</th><th scope="col">{t("Status · next step", "État · prochaine étape")}</th></tr></thead>
             <tbody>{items.map(r => { const s = getReportStatus(r); return <tr key={r.record_id} data-priority={r.priority?.level}><td className="col-priority"><PriorityBadge r={r} /></td>
               <th scope="row"><Link href={"/runs/" + r.record_id}>{r.title}</Link>{r.source_location.startsWith("Sample data") && <Tip text={t("A fictional project written in the style of a Water Care programme report, for demonstration only.", "Projet fictif rédigé dans le style d’un rapport de programme de Water Care, pour la démonstration.")}><span className="sample-chip">{t("Sample data", "Données d’exemple")}</span></Tip>}<small>{r.funder ?? "—"} · {t("Received", "Reçu")} {date(r.received_date)} · {r.record_id}</small></th>
-              <td className="numeric">{(() => { const d = dueDate(r); return d
+              <td className="numeric">{(() => { const d = dues.get(r.record_id); return d
                 ? <Tip text={t(`FDF Q${d.quarter} financial report deadline, from the Annual Operating Calendar.`, `Échéance du rapport financier FDF T${d.quarter}, selon le calendrier annuel.`)}>{date(d.date)}</Tip>
                 : <Tip text={t("No deadline for this funder in the operating calendar.", "Aucune échéance pour ce bailleur dans le calendrier.")}><span className="muted">—</span></Tip>; })()}</td>
               <td>{r.preparer ? <span className="owner"><span className="owner-avatar" aria-hidden="true">{r.preparer.trim()[0]?.toUpperCase()}</span>{r.preparer}</span> : <Tip text={t("No preparer yet. Whoever runs the first step as preparer becomes the owner.", "Pas encore de préparateur. La personne qui lance la première étape devient responsable.")}><span className="muted">{t("Unassigned", "Non attribué")}</span></Tip>}</td>

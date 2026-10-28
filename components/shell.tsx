@@ -37,8 +37,10 @@ export function savePreferences(change: Partial<Preferences>) {
 }
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
 export function usePreferences() { return useSyncExternalStore(subscribe, readPreferences, () => DEFAULTS); }
-// The Assistant (with the French review panel) loads only when someone opens it, not with every page.
-const AssistantPanel = dynamic(() => import("@/components/assistant-panel").then(m => m.AssistantPanel), { ssr: false });
+// The Assistant (with the French review panel) loads only when someone opens it, not with every page. Until its
+// code arrives the drawer says so, instead of opening empty.
+const AssistantPanel = dynamic(() => import("@/components/assistant-panel").then(m => m.AssistantPanel), { ssr: false, loading: () => <AssistantLoading /> });
+function AssistantLoading() { const { t } = useLanguage(); return <p className="loading assistant-loading" role="status">{t("Opening the Assistant…", "Ouverture de l’Assistant…")}</p>; }
 // At phone width the sidebar is a drawer over the page, so its toggle reports the drawer, not the desktop rail.
 const PHONE = "(max-width: 860px)";
 const subscribePhone = (l: () => void) => { const m = matchMedia(PHONE); m.addEventListener("change", l); return () => m.removeEventListener("change", l); };

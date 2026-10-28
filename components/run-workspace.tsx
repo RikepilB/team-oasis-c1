@@ -155,9 +155,9 @@ export default function RunWorkspace({ id, tab, initialFunder }: { id: string; t
       </>}
       {tab === "activity" && <Activity id={record.record_id} />}
     </section>
-    {/* The bar floats only where people approve and export. On the other tabs it sits after the content,
-        so on a laptop screen it never hides the next step or a fact. */}
-    <div className={"report-actionbar" + (tab === "draft" || tab === "approvals" ? "" : " is-inline")} role="region" aria-label={t("Approval and export", "Approbation et export")}>
+    {/* The bar floats only on Approvals, where people approve and export. Everywhere else it sits after the
+        content (on Funder draft: approve once you have read every field), so it never hides a step or a link. */}
+    <div className={"report-actionbar" + (tab === "approvals" ? "" : " is-inline")} role="region" aria-label={t("Approval and export", "Approbation et export")}>
       <div className="actionbar-inner">{funderPicker}{!actor.trim() && <span className="actionbar-hint">{t("Pick a person in the sidebar to approve or export.", "Choisissez une personne dans le menu pour approuver ou exporter.")}</span>}{actor.trim() && barAction && !allowed(barAction) && <div className="actionbar-hint"><SwitchNotice action={barAction} /></div>}{selfApproval && barAction === "approve" && <span className="actionbar-hint">{t("You prepared this version. A different person must approve it.", "Vous avez préparé cette version. Une autre personne doit l’approuver.")}</span>}<span className="actionbar-state"><strong>{template ? t("Revision", "Révision") + " " + template.revision : "—"}</strong> · {versionState(template)}</span>
         <div className="actionbar-buttons"><GuardedButton className="secondary" busy={busy === "approve"} reason={approveReason} onClick={() => void action("approve")}>{busy === "approve" ? t("Checking…", "Vérification…") : t("Approve content", "Approuver le contenu")}</GuardedButton>{template?.approval?.sent_at
           ? <button type="button" className="primary" aria-haspopup="dialog" onClick={() => setExportDialog("download")}>{t("Download…", "Télécharger…")}</button>

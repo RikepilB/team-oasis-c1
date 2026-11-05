@@ -6,6 +6,7 @@ Built for The Water Challenge AI Hackathon, track C1 ("Reimagining an AI-Enabled
 
 - Workspace: https://synapse-oasis-one.vercel.app
 - Astro introduction: https://synapse-oasis-site.vercel.app
+- Hand-over documents (setup, user manual, job guides): [`handover/`](handover/README.md)
 
 ## Assumptions
 
@@ -183,7 +184,7 @@ Root `vercel.json` deploys Next.js. Set the server-only database and Redis varia
 
 For the separate static site, set `PUBLIC_WORKSPACE_URL`, run `npm run build:site`, then `node scripts/prepare-site-deploy.mjs`. Link `apps/site/dist` to its separate Vercel project and deploy it using the generated static configuration. This avoids inheriting the Next install/build commands.
 
-Public demos are for fictional data only. Real use requires identity, access controls, retention and operational review. Analytics and real external intake are not enabled. Application licensing remains a team decision; third-party fonts retain their own licenses.
+Public demos are for fictional data only. Real use requires identity, access controls, retention and operational review. Analytics and real external intake are not enabled. The application is under the MIT licence ([`LICENSE`](LICENSE)); third-party fonts retain their own licenses.
 
 ## Design
 
